@@ -1,0 +1,545 @@
+BL51 BANKED LINKER/LOCATER V6.22                                                        07/23/2014  12:56:44  PAGE 1
+
+
+BL51 BANKED LINKER/LOCATER V6.22, INVOKED BY:
+D:\PROGRAM FILES (X86)\KEIL_V9\C51\BIN\BL51.EXE START900.obj, ControlFuenteCorriente.obj TO ControlDigital933OK RAMSIZE 
+>> (256)
+
+
+MEMORY MODEL: SMALL
+
+
+INPUT MODULES INCLUDED:
+  START900.obj (?C_STARTUP)
+  ControlFuenteCorriente.obj (CONTROLFUENTECORRIENTE)
+  D:\PROGRAM FILES (X86)\KEIL_V9\C51\LIB\C51S.LIB (?C_INIT)
+
+
+LINK MAP OF MODULE:  ControlDigital933OK (?C_STARTUP)
+
+
+            TYPE    BASE      LENGTH    RELOCATION   SEGMENT NAME
+            -----------------------------------------------------
+
+            * * * * * * *   D A T A   M E M O R Y   * * * * * * *
+            REG     0000H     0008H     ABSOLUTE     "REG BANK 0"
+            DATA    0008H     0008H     UNIT         ?DT?CONTROLFUENTECORRIENTE
+            REG     0010H     0008H     ABSOLUTE     "REG BANK 2"
+            DATA    0018H     0001H     UNIT         _DATA_GROUP_
+                    0019H     0007H                  *** GAP ***
+            BIT     0020H.0   0000H.3   UNIT         ?BI?CONTROLFUENTECORRIENTE
+                    0020H.3   0000H.5                *** GAP ***
+            IDATA   0021H     0001H     UNIT         ?STACK
+
+            * * * * * * *   C O D E   M E M O R Y   * * * * * * *
+            CODE    0000H     0003H     ABSOLUTE     
+            CODE    0003H     0012H     UNIT         ?PR?TIMERS_INIT?CONTROLFUENTECORRIENTE
+            CODE    0015H     0005H     UNIT         ?PR?KEYPAD_ISR?CONTROLFUENTECORRIENTE
+                    001AH     0001H                  *** GAP ***
+            CODE    001BH     0003H     ABSOLUTE     
+            CODE    001EH     0007H     UNIT         ?PR?OSC_INIT?CONTROLFUENTECORRIENTE
+            CODE    0025H     0007H     UNIT         ?C_INITSEG
+                    002CH     000FH                  *** GAP ***
+            CODE    003BH     0003H     ABSOLUTE     
+            CODE    003EH     00E6H     UNIT         ?PR?_CONFIGURA_FUENTE_DE_CORRIENTE?CONTROLFUENTECORRIENTE
+            CODE    0124H     008CH     UNIT         ?C_C51STARTUP
+            CODE    01B0H     006AH     UNIT         ?PR?MAIN?CONTROLFUENTECORRIENTE
+            CODE    021AH     004CH     UNIT         ?PR?PORTS_INIT?CONTROLFUENTECORRIENTE
+            CODE    0266H     0042H     UNIT         ?PR?TIMERS_ISR1?CONTROLFUENTECORRIENTE
+            CODE    02A8H     002FH     UNIT         ?PR?UART_INIT?CONTROLFUENTECORRIENTE
+            CODE    02D7H     002BH     UNIT         ?PR?DETECTA_TECLA_PULSADA?CONTROLFUENTECORRIENTE
+            CODE    0302H     001EH     UNIT         ?PR?KEYPAD_INIT?CONTROLFUENTECORRIENTE
+                    0320H     FCD0H                  *** GAP ***
+            CODE    FFF0H     0004H     ABSOLUTE     
+                    FFF4H     0004H                  *** GAP ***
+            CODE    FFF8H     0008H     ABSOLUTE     
+
+
+
+OVERLAY MAP OF MODULE:   ControlDigital933OK (?C_STARTUP)
+
+
+BL51 BANKED LINKER/LOCATER V6.22                                                      07/23/2014  12:56:44  PAGE 2
+
+
+SEGMENT                                            DATA_GROUP 
+  +--> CALLED SEGMENT                            START    LENGTH
+----------------------------------------------------------------
+?C_C51STARTUP                                    -----    -----
+  +--> ?PR?MAIN?CONTROLFUENTECORRIENTE
+  +--> ?C_INITSEG
+
+?PR?MAIN?CONTROLFUENTECORRIENTE                  -----    -----
+  +--> ?PR?OSC_INIT?CONTROLFUENTECORRIENTE
+  +--> ?PR?PORTS_INIT?CONTROLFUENTECORRIENTE
+  +--> ?PR?UART_INIT?CONTROLFUENTECORRIENTE
+  +--> ?PR?TIMERS_INIT?CONTROLFUENTECORRIENTE
+  +--> ?PR?KEYPAD_INIT?CONTROLFUENTECORRIENTE
+
+*** NEW ROOT ***************************************************
+
+?PR?TIMERS_ISR1?CONTROLFUENTECORRIENTE           -----    -----
+  +--> ?PR?DETECTA_TECLA_PULSADA?CONTROLFUEN...
+  +--> ?PR?_CONFIGURA_FUENTE_DE_CORRIENTE?CO...
+
+?PR?DETECTA_TECLA_PULSADA?CONTROLFUEN...         0018H    0001H
+
+
+
+SYMBOL TABLE OF MODULE:  ControlDigital933OK (?C_STARTUP)
+
+  VALUE           TYPE          NAME
+  ----------------------------------
+
+  -------         MODULE        ?C_STARTUP
+  C:0124H         SEGMENT       ?C_C51STARTUP
+  I:0021H         SEGMENT       ?STACK
+  C:0000H         PUBLIC        ?C_STARTUP
+  N:0000H         SYMBOL        BOOTSTAT
+  N:001FH         SYMBOL        BOOTVEC
+  N:0000H         SYMBOL        IBPSTACK
+  N:0100H         SYMBOL        IBPSTACKTOP
+  N:0100H         SYMBOL        IDATALEN
+  C:0127H         SYMBOL        IDATALOOP
+  N:0000H         SYMBOL        PBPSTACK
+  N:0100H         SYMBOL        PBPSTACKTOP
+  N:0000H         SYMBOL        SEC0
+  N:0000H         SYMBOL        SEC1
+  N:0000H         SYMBOL        SEC2
+  N:0000H         SYMBOL        SEC3
+  N:0000H         SYMBOL        SEC4
+  N:0000H         SYMBOL        SEC5
+  N:0000H         SYMBOL        SEC6
+  N:0000H         SYMBOL        SEC7
+  D:0081H         SYMBOL        SP
+  C:0124H         SYMBOL        STARTUP1
+  N:0043H         SYMBOL        UCFG1
+  N:0000H         SYMBOL        UCFG2
+  N:0000H         SYMBOL        XBPSTACK
+  N:0200H         SYMBOL        XBPSTACKTOP
+  N:0000H         SYMBOL        XDATALEN
+  N:0000H         SYMBOL        XDATASTART
+BL51 BANKED LINKER/LOCATER V6.22                                                      07/23/2014  12:56:44  PAGE 3
+
+
+  C:0000H         LINE#         344
+  C:0124H         LINE#         351
+  C:0126H         LINE#         352
+  C:0127H         LINE#         353
+  C:0128H         LINE#         354
+  C:012AH         LINE#         392
+  C:012DH         LINE#         393
+  -------         ENDMOD        ?C_STARTUP
+
+  -------         MODULE        CONTROLFUENTECORRIENTE
+  C:0000H         SYMBOL        _ICE_DUMMY_
+  D:0084H         PUBLIC        P0M1
+  D:0091H         PUBLIC        P1M1
+  D:0085H         PUBLIC        P0M2
+  D:0080H         PUBLIC        P0
+  D:00A4H         PUBLIC        P2M1
+  D:0092H         PUBLIC        P1M2
+  D:0090H         PUBLIC        P1
+  D:00B1H         PUBLIC        P3M1
+  D:00A5H         PUBLIC        P2M2
+  D:00A0H         PUBLIC        P2
+  D:00B2H         PUBLIC        P3M2
+  D:00B0H         PUBLIC        P3
+  B:00A8H.7       PUBLIC        EA
+  D:0008H         PUBLIC        fuente
+  C:003EH         PUBLIC        _configura_fuente_de_corriente
+  D:00A8H         PUBLIC        IEN0
+  D:00E8H         PUBLIC        IEN1
+  B:00A0H.0       PUBLIC        LED_ON_OFF
+  D:00BAH         PUBLIC        SSTAT
+  D:00B7H         PUBLIC        IP0H
+  D:00F7H         PUBLIC        IP1H
+  B:00A8H.4       PUBLIC        ES
+  C:0302H         PUBLIC        keypad_init
+  D:0009H         PUBLIC        rango
+  D:000AH         PUBLIC        referencia
+  B:0090H.7       PUBLIC        RELE_NIVEL_1
+  C:02D7H         PUBLIC        detecta_tecla_pulsada
+  B:0020H.0       PUBLIC        flag
+  B:0090H.6       PUBLIC        RELE_NIVEL_2
+  B:00E8H.1       PUBLIC        EKBI
+  B:00B0H.1       PUBLIC        RELE_NIVEL_3
+  B:0080H.5       PUBLIC        RELE_IN_EX
+  B:0090H.3       PUBLIC        LED_10MA
+  C:01B0H         PUBLIC        main
+  D:00C0H         PUBLIC        ADMODA
+  B:00A0H.3       PUBLIC        LED_10UA
+  B:00A0H.6       PUBLIC        LED_REF_INT_INV
+  C:0003H         PUBLIC        timers_init
+  D:0095H         PUBLIC        DIVM
+  D:0087H         PUBLIC        PCON
+  C:0015H         PUBLIC        keypad_isr
+  D:0098H         PUBLIC        SCON
+  D:0089H         PUBLIC        TMOD
+  D:0088H         PUBLIC        TCON
+  D:0086H         PUBLIC        KBMASK
+  D:0096H         PUBLIC        TRIM
+BL51 BANKED LINKER/LOCATER V6.22                                                      07/23/2014  12:56:44  PAGE 4
+
+
+  D:00BDH         PUBLIC        BRGCON
+  D:000BH         PUBLIC        Contador
+  D:0093H         PUBLIC        KBPATN
+  B:0020H.1       PUBLIC        pwdw
+  D:000DH         PUBLIC        CiclosEspera
+  D:000FH         PUBLIC        pulsadores
+  D:00B8H         PUBLIC        IP0
+  B:00A8H.3       PUBLIC        ET1
+  D:00F8H         PUBLIC        IP1
+  D:008DH         PUBLIC        TH1
+  D:008BH         PUBLIC        TL1
+  C:021AH         PUBLIC        ports_init
+  C:02A8H         PUBLIC        uart_init
+  B:0090H.4       PUBLIC        LED_100MA
+  B:00A8H.5       PUBLIC        EBO
+  B:0088H.6       PUBLIC        TR1
+  D:00D8H         PUBLIC        I2CON
+  C:001EH         PUBLIC        osc_init
+  B:00A0H.2       PUBLIC        LED_100UA
+  D:00BEH         PUBLIC        BRGR0
+  D:00BFH         PUBLIC        BRGR1
+  B:00A0H.7       PUBLIC        LED_REF_INT
+  B:0020H.2       PUBLIC        tecla_valida
+  B:0080H.4       PUBLIC        RELE_ON_OFF
+  B:0080H.1       PUBLIC        SW_ON_OFF
+  B:00A0H.1       PUBLIC        LED_REF_EXT
+  B:00B0H.0       PUBLIC        RELE_REF
+  D:0094H         PUBLIC        KBCON
+  D:00A2H         PUBLIC        AUXR1
+  B:0090H.2       PUBLIC        LED_1MA
+  D:008FH         PUBLIC        TAMOD
+  C:0266H         PUBLIC        timers_isr1
+  D:00D0H         PUBLIC        PSW
+  -------         PROC          MAIN
+  C:01B0H         LINE#         93
+  C:01B0H         LINE#         94
+  C:01B0H         LINE#         95
+  C:01B3H         LINE#         96
+  C:01B6H         LINE#         97
+  C:01B9H         LINE#         98
+  C:01BCH         LINE#         99
+  C:01BCH         LINE#         101
+  C:01C1H         LINE#         102
+  C:01C1H         LINE#         103
+  C:01C3H         LINE#         104
+  C:01D0H         LINE#         105
+  C:01D6H         LINE#         106
+  C:01D8H         LINE#         107
+  C:01E5H         LINE#         108
+  C:01EBH         LINE#         109
+  C:01F9H         LINE#         110
+  C:01FBH         LINE#         111
+  C:01FBH         LINE#         113
+  C:01FEH         LINE#         114
+  C:0201H         LINE#         115
+  C:0203H         LINE#         116
+  C:0205H         LINE#         117
+BL51 BANKED LINKER/LOCATER V6.22                                                      07/23/2014  12:56:44  PAGE 5
+
+
+  C:0205H         LINE#         118
+  C:0205H         LINE#         119
+  C:0208H         LINE#         120
+  C:0208H         LINE#         121
+  C:020AH         LINE#         124
+  C:020DH         LINE#         125
+  C:020FH         LINE#         126
+  C:0212H         LINE#         127
+  C:0218H         LINE#         128
+  C:0218H         LINE#         129
+  -------         ENDPROC       MAIN
+  -------         PROC          UART_INIT
+  C:02A8H         LINE#         139
+  C:02A8H         LINE#         140
+  C:02A8H         LINE#         143
+  C:02ABH         LINE#         144
+  C:02AEH         LINE#         146
+  C:02B1H         LINE#         147
+  C:02B1H         LINE#         148
+  C:02B4H         LINE#         150
+  C:02B7H         LINE#         152
+  C:02B9H         LINE#         153
+  C:02BCH         LINE#         154
+  C:02BFH         LINE#         155
+  C:02C2H         LINE#         158
+  C:02C5H         LINE#         159
+  C:02C8H         LINE#         160
+  C:02CBH         LINE#         161
+  C:02CEH         LINE#         163
+  C:02D1H         LINE#         164
+  C:02D4H         LINE#         168
+  C:02D6H         LINE#         170
+  -------         ENDPROC       UART_INIT
+  -------         PROC          KEYPAD_INIT
+  C:0302H         LINE#         176
+  C:0302H         LINE#         177
+  C:0302H         LINE#         179
+  C:0305H         LINE#         181
+  C:0308H         LINE#         183
+  C:030BH         LINE#         185
+  C:030EH         LINE#         186
+  C:0311H         LINE#         188
+  C:0314H         LINE#         189
+  C:0317H         LINE#         190
+  C:031AH         LINE#         191
+  C:031DH         LINE#         193
+  C:031FH         LINE#         194
+  -------         ENDPROC       KEYPAD_INIT
+  -------         PROC          PORTS_INIT
+  C:021AH         LINE#         201
+  C:021AH         LINE#         202
+  C:021AH         LINE#         205
+  C:021DH         LINE#         206
+  C:0220H         LINE#         207
+  C:0223H         LINE#         208
+  C:0226H         LINE#         209
+  C:0229H         LINE#         210
+BL51 BANKED LINKER/LOCATER V6.22                                                      07/23/2014  12:56:44  PAGE 6
+
+
+  C:022CH         LINE#         211
+  C:022FH         LINE#         212
+  C:0232H         LINE#         213
+  C:0235H         LINE#         214
+  C:0238H         LINE#         215
+  C:023BH         LINE#         216
+  C:023EH         LINE#         218
+  C:0240H         LINE#         219
+  C:0242H         LINE#         220
+  C:0244H         LINE#         221
+  C:0246H         LINE#         222
+  C:0248H         LINE#         223
+  C:024AH         LINE#         224
+  C:024CH         LINE#         225
+  C:024EH         LINE#         226
+  C:0250H         LINE#         227
+  C:0252H         LINE#         228
+  C:0254H         LINE#         229
+  C:0256H         LINE#         230
+  C:0258H         LINE#         231
+  C:025AH         LINE#         232
+  C:025CH         LINE#         234
+  C:025FH         LINE#         235
+  C:0262H         LINE#         236
+  C:0265H         LINE#         237
+  -------         ENDPROC       PORTS_INIT
+  -------         PROC          OSC_INIT
+  C:001EH         LINE#         245
+  C:001EH         LINE#         246
+  C:001EH         LINE#         248
+  C:0021H         LINE#         250
+  C:0024H         LINE#         253
+  -------         ENDPROC       OSC_INIT
+  -------         PROC          TIMERS_INIT
+  C:0003H         LINE#         262
+  C:0003H         LINE#         263
+  C:0003H         LINE#         265
+  C:0006H         LINE#         266
+  C:0009H         LINE#         267
+  C:000CH         LINE#         269
+  C:000FH         LINE#         270
+  C:0012H         LINE#         275
+  C:0014H         LINE#         276
+  -------         ENDPROC       TIMERS_INIT
+  -------         PROC          KEYPAD_ISR
+  C:0015H         LINE#         283
+  C:0015H         LINE#         286
+  C:0017H         LINE#         287
+  C:0019H         LINE#         288
+  -------         ENDPROC       KEYPAD_ISR
+  -------         PROC          TIMERS_ISR1
+  -------         DO            
+  D:0017H         SYMBOL        tecla_pulsada
+  -------         ENDDO         
+  C:0266H         LINE#         296
+  C:0273H         LINE#         299
+  C:0275H         LINE#         301
+BL51 BANKED LINKER/LOCATER V6.22                                                      07/23/2014  12:56:44  PAGE 7
+
+
+  C:0278H         LINE#         302
+  C:027BH         LINE#         303
+  C:0280H         LINE#         304
+  C:0280H         LINE#         305
+  C:0283H         LINE#         306
+  C:0286H         LINE#         307
+  C:0286H         LINE#         308
+  C:0289H         LINE#         309
+  C:0289H         LINE#         310
+  C:0289H         LINE#         312
+  C:028EH         LINE#         313
+  C:028EH         LINE#         314
+  C:0291H         LINE#         315
+  C:0294H         LINE#         316
+  C:0296H         LINE#         317
+  C:0298H         LINE#         318
+  C:029BH         LINE#         319
+  C:029DH         LINE#         320
+  -------         ENDPROC       TIMERS_ISR1
+  -------         PROC          DETECTA_TECLA_PULSADA
+  -------         DO            
+  D:0018H         SYMBOL        tecla_detectada
+  -------         ENDDO         
+  C:02D7H         LINE#         327
+  C:02D7H         LINE#         328
+  C:02D7H         LINE#         330
+  C:02E5H         LINE#         331
+  C:02E5H         LINE#         332
+  C:02E5H         LINE#         333
+  C:02E8H         LINE#         334
+  C:02EAH         LINE#         335
+  C:02ECH         LINE#         336
+  C:02ECH         LINE#         337
+  C:02EFH         LINE#         338
+  C:02F1H         LINE#         339
+  C:02F3H         LINE#         340
+  C:02F3H         LINE#         341
+  C:02F6H         LINE#         342
+  C:02F8H         LINE#         343
+  C:02FAH         LINE#         344
+  C:02FAH         LINE#         345
+  C:02FDH         LINE#         346
+  C:02FFH         LINE#         347
+  C:02FFH         LINE#         348
+  C:02FFH         LINE#         349
+  C:0301H         LINE#         350
+  -------         ENDPROC       DETECTA_TECLA_PULSADA
+  -------         PROC          _CONFIGURA_FUENTE_DE_CORRIENTE
+  D:0007H         SYMBOL        tecla_pulsada
+  C:003EH         LINE#         355
+  C:003EH         LINE#         356
+  C:003EH         LINE#         357
+  C:004CH         LINE#         358
+  C:004CH         LINE#         360
+  C:004CH         LINE#         362
+  C:0057H         LINE#         363
+  C:0057H         LINE#         364
+BL51 BANKED LINKER/LOCATER V6.22                                                      07/23/2014  12:56:44  PAGE 8
+
+
+  C:0057H         LINE#         365
+  C:005AH         LINE#         366
+  C:005CH         LINE#         367
+  C:005EH         LINE#         368
+  C:005FH         LINE#         369
+  C:005FH         LINE#         370
+  C:0062H         LINE#         371
+  C:0064H         LINE#         372
+  C:0066H         LINE#         373
+  C:0067H         LINE#         374
+  C:0067H         LINE#         375
+  C:0067H         LINE#         378
+  C:0067H         LINE#         380
+  C:0069H         LINE#         381
+  C:006BH         LINE#         382
+  C:006EH         LINE#         384
+  C:007DH         LINE#         385
+  C:007DH         LINE#         386
+  C:007DH         LINE#         388
+  C:007FH         LINE#         389
+  C:0081H         LINE#         390
+  C:0083H         LINE#         391
+  C:0085H         LINE#         392
+  C:0087H         LINE#         393
+  C:008AH         LINE#         394
+  C:008BH         LINE#         395
+  C:008BH         LINE#         397
+  C:008DH         LINE#         398
+  C:008FH         LINE#         399
+  C:0091H         LINE#         400
+  C:0093H         LINE#         401
+  C:0095H         LINE#         402
+  C:0098H         LINE#         403
+  C:0099H         LINE#         404
+  C:0099H         LINE#         406
+  C:009BH         LINE#         407
+  C:009DH         LINE#         408
+  C:009FH         LINE#         409
+  C:00A1H         LINE#         410
+  C:00A3H         LINE#         411
+  C:00A6H         LINE#         412
+  C:00A7H         LINE#         413
+  C:00A7H         LINE#         414
+  C:00A7H         LINE#         417
+  C:00A7H         LINE#         419
+  C:00A9H         LINE#         420
+  C:00ABH         LINE#         421
+  C:00AEH         LINE#         423
+  C:00C0H         LINE#         424
+  C:00C0H         LINE#         425
+  C:00C0H         LINE#         426
+  C:00C2H         LINE#         427
+  C:00C4H         LINE#         428
+  C:00C6H         LINE#         429
+  C:00C8H         LINE#         430
+  C:00CAH         LINE#         431
+  C:00CCH         LINE#         432
+BL51 BANKED LINKER/LOCATER V6.22                                                      07/23/2014  12:56:44  PAGE 9
+
+
+  C:00CEH         LINE#         433
+  C:00D0H         LINE#         434
+  C:00D3H         LINE#         435
+  C:00D4H         LINE#         436
+  C:00D4H         LINE#         437
+  C:00D6H         LINE#         438
+  C:00D8H         LINE#         439
+  C:00DAH         LINE#         440
+  C:00DCH         LINE#         441
+  C:00DEH         LINE#         442
+  C:00E0H         LINE#         443
+  C:00E2H         LINE#         444
+  C:00E4H         LINE#         445
+  C:00E7H         LINE#         446
+  C:00E8H         LINE#         447
+  C:00E8H         LINE#         448
+  C:00EAH         LINE#         449
+  C:00ECH         LINE#         450
+  C:00EEH         LINE#         451
+  C:00F0H         LINE#         452
+  C:00F2H         LINE#         453
+  C:00F4H         LINE#         454
+  C:00F6H         LINE#         455
+  C:00F8H         LINE#         456
+  C:00FBH         LINE#         457
+  C:00FCH         LINE#         458
+  C:00FCH         LINE#         459
+  C:00FEH         LINE#         460
+  C:0100H         LINE#         461
+  C:0102H         LINE#         462
+  C:0104H         LINE#         463
+  C:0106H         LINE#         464
+  C:0108H         LINE#         465
+  C:010AH         LINE#         466
+  C:010CH         LINE#         467
+  C:010FH         LINE#         468
+  C:0110H         LINE#         469
+  C:0110H         LINE#         470
+  C:0112H         LINE#         471
+  C:0114H         LINE#         472
+  C:0116H         LINE#         473
+  C:0118H         LINE#         474
+  C:011AH         LINE#         475
+  C:011CH         LINE#         476
+  C:011EH         LINE#         477
+  C:0120H         LINE#         478
+  C:0123H         LINE#         479
+  C:0123H         LINE#         480
+  C:0123H         LINE#         481
+  C:0123H         LINE#         483
+  C:0123H         LINE#         484
+  C:0123H         LINE#         485
+  C:0123H         LINE#         486
+  -------         ENDPROC       _CONFIGURA_FUENTE_DE_CORRIENTE
+  -------         ENDMOD        CONTROLFUENTECORRIENTE
+
+Program Size: data=26.3 xdata=0 code=796
+BL51 BANKED LINKER/LOCATER V6.22                                                      07/23/2014  12:56:44  PAGE 10
+
+
+LINK/LOCATE RUN COMPLETE.  0 WARNING(S),  0 ERROR(S)

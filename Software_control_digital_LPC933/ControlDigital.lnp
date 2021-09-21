@@ -1,0 +1,4 @@
+"START900.obj",
+"ControlFuenteCorriente.obj" 
+TO "ControlDigital" 
+RAMSIZE(256) 

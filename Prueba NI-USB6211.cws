@@ -1,0 +1,502 @@
+[Workspace Header]
+Version = 851
+Pathname Line0001 = "/x/PROYECTO/2013/2030734 D Fuentes de Corriente 1mA y 100mA Bajo ruido/CVI/Progr"
+Pathname Line0002 = "ama para probar/Prueba NI-USB6211.cws"
+CVI Dir = "/d/program files (x86)/national instruments/cvi85"
+CVI Shared Dir = "/D/Program Files (x86)/National Instruments/Shared/CVI"
+CVI Pub Local Dir = "/C/ProgramData/National Instruments/CVI85"
+CVI Pub Global Dir = "/C/ProgramData/National Instruments/CVI"
+IVI Standard Root Dir = "/C/Program Files (x86)/IVI Foundation/IVI"
+VXIplug&play Framework Dir = "/C/VXIPNP/winnt"
+Number of Projects = 6
+Active Project = 3
+Project 0001 Line0001 = "/x/PROYECTO/2013/2030734 D Fuentes de Corriente 1mA y 100mA Bajo ruido/CVI/Ejemp"
+Project 0001 Line0002 = "los/Synch AI-AO/SynchAI-AO.prj"
+Project 0001 Collapsed = True
+Project 0002 Line0001 = "/x/PROYECTO/2013/2030734 D Fuentes de Corriente 1mA y 100mA Bajo ruido/CVI/Ejemp"
+Project 0002 Line0002 = "los/Cont Acq-Int Clk-Dig Start-Retriggerable/ContAcq-IntClk-DigStart-Retrig.prj"
+Project 0002 Collapsed = True
+Project 0003 Line0001 = "/x/PROYECTO/2013/2030734 D Fuentes de Corriente 1mA y 100mA Bajo ruido/CVI/Ejemp"
+Project 0003 Line0002 = "los/Cont Gen Volt Wfm-Int Clk/ContGen-IntClk.prj"
+Project 0003 Folder Instrument Files Collapsed = True
+Project 0004 Line0001 = "/x/PROYECTO/2013/2030734 D Fuentes de Corriente 1mA y 100mA Bajo ruido/CVI/Ejemp"
+Project 0004 Line0002 = "los/Cont Acq-Int Clk-Every N Samples Event/ContAcq-IntClk-EveryNSamplesEvent.prj"
+Project 0004 Collapsed = True
+Project 0005 Line0001 = "/x/PROYECTO/2013/2030734 D Fuentes de Corriente 1mA y 100mA Bajo ruido/CVI/Ejemp"
+Project 0005 Line0002 = "los/Mis Pruebas/Prueba6/Prueba6.prj"
+Project 0005 Collapsed = True
+Project 0006 Line0001 = "/x/PROYECTO/2013/2030734 D Fuentes de Corriente 1mA y 100mA Bajo ruido/CVI/Ejemp"
+Project 0006 Line0002 = "los/Mis Pruebas/Ejemplo de uso callbackdata/cbdata.prj"
+Drag Bar Left = 320
+Window Top = 85
+Window Left = 69
+Window Bottom = 970
+Window Right = 1183
+Maximized = True
+Maximized Children = True
+Max Number Of Errors = 20
+Track Include File Dependencies = True
+Prompt For Missing Includes = True
+Stop On First Error File = False
+Bring Up Err Win For Warnings = True
+Show Build Dialog = False
+Save Changes Before Running = "Always"
+Hide Windows = False
+Global Hot Key = False
+Break At First Statement = False
+Sort Type = "File Name"
+Number of Opened Files = 7
+Window Confinement Region Enabled = True
+MainColumnWidth = 301
+FileDateColumnWidth = 70
+FileSizeColumnWidth = 70
+StatusColumnWidth = 70
+
+[Project Header 0001]
+Version = 851
+Don't Update DistKit = False
+Platform Code = 4
+Build Configuration = "Debug"
+Warn User If Debugging Release = 1
+Batch Build Release = False
+Batch Build Debug = False
+Force Rebuild = False
+
+[Project Header 0002]
+Version = 851
+Don't Update DistKit = False
+Platform Code = 4
+Build Configuration = "Debug"
+Warn User If Debugging Release = 1
+Batch Build Release = False
+Batch Build Debug = False
+Force Rebuild = False
+
+[Project Header 0003]
+Version = 851
+Don't Update DistKit = False
+Platform Code = 4
+Build Configuration = "Debug"
+Warn User If Debugging Release = 1
+Batch Build Release = False
+Batch Build Debug = False
+Force Rebuild = False
+
+[Project Header 0004]
+Version = 851
+Don't Update DistKit = False
+Platform Code = 4
+Build Configuration = "Debug"
+Warn User If Debugging Release = 1
+Batch Build Release = False
+Batch Build Debug = False
+Force Rebuild = False
+
+[Project Header 0005]
+Version = 851
+Don't Update DistKit = False
+Platform Code = 4
+Build Configuration = "Debug"
+Warn User If Debugging Release = 1
+Batch Build Release = False
+Batch Build Debug = False
+Force Rebuild = False
+
+[Project Header 0006]
+Version = 851
+Don't Update DistKit = False
+Platform Code = 4
+Build Configuration = "Debug"
+Warn User If Debugging Release = 1
+Batch Build Release = False
+Batch Build Debug = False
+Force Rebuild = False
+
+[File 0001]
+Path Line0001 = "/d/Program Files (x86)/National Instruments/Shared/CVI/toolslib/custctrl/daqmxio"
+Path Line0002 = "ctrl.fp"
+File Type = "Function Panel"
+Disk Date = 3454520572
+In Projects = "1,2,3,4,"
+
+[File 0002]
+Path Line0001 = "/x/PROYECTO/2013/2030734 D Fuentes de Corriente 1mA y 100mA Bajo ruido/CVI/Ejemp"
+Path Line0002 = "los/Cont Gen Volt Wfm-Int Clk/ContGen-IntClk.c"
+File Type = "CSource"
+Disk Date = 3469781720
+In Projects = "3,"
+Window Top = 92
+Window Left = 42
+Window Z-Order = 2
+Source Window State = "1,55,55,55,0,22,0,0,0,80,0,0,0,0,0,25,140,0,186,8,349,687,1,0,"
+
+[File 0003]
+Path Line0001 = "/x/PROYECTO/2013/2030734 D Fuentes de Corriente 1mA y 100mA Bajo ruido/CVI/Ejemp"
+Path Line0002 = "los/Cont Gen Volt Wfm-Int Clk/ContGen-IntClk.uir"
+File Type = "User Interface Resource"
+Disk Date = 3469781009
+In Projects = "3,"
+Window Top = 62
+Window Left = 26
+Window Height = 349
+Window Width = 687
+Window Z-Order = 1
+
+[File 0004]
+Path Line0001 = "/x/PROYECTO/2013/2030734 D Fuentes de Corriente 1mA y 100mA Bajo ruido/CVI/Ejemp"
+Path Line0002 = "los/Mis Pruebas/Ejemplo de uso callbackdata/cbdata.uir"
+File Type = "User Interface Resource"
+Disk Date = 2868425902
+In Projects = "6,"
+Window Top = 392
+Window Left = 202
+Window Height = 349
+Window Width = 687
+Window Z-Order = 7
+
+[File 0005]
+Path Line0001 = "/x/PROYECTO/2013/2030734 D Fuentes de Corriente 1mA y 100mA Bajo ruido/CVI/Ejemp"
+Path Line0002 = "los/Mis Pruebas/Ejemplo de uso callbackdata/cbdata.c"
+File Type = "CSource"
+Disk Date = 2980912426
+In Projects = "6,"
+Window Top = 422
+Window Left = 218
+Window Height = -16281
+Window Z-Order = 6
+Source Window State = "1,35,35,35,4,14,14,0,0,80,0,0,0,0,0,25,9,0,66,0,349,687,1,0,"
+
+[File 0006]
+Path Line0001 = "/x/PROYECTO/2013/2030734 D Fuentes de Corriente 1mA y 100mA Bajo ruido/CVI/Ejemp"
+Path Line0002 = "los/Synch AI-AO/SynchAI-AO.uir"
+File Type = "User Interface Resource"
+Disk Date = 3469626367
+In Projects = "1,"
+Window Top = 212
+Window Left = 106
+Window Height = 349
+Window Width = 687
+Window Z-Order = 5
+
+[File 0007]
+Path Line0001 = "/x/PROYECTO/2013/2030734 D Fuentes de Corriente 1mA y 100mA Bajo ruido/CVI/Ejemp"
+Path Line0002 = "los/Cont Acq-Int Clk-Dig Start-Retriggerable/ContAcq-IntClk-DigStart-Retrig.c"
+File Type = "CSource"
+Disk Date = 3454520784
+In Projects = "2,"
+Window Top = 62
+Window Left = 26
+Window Z-Order = 3
+Source Window State = "1,139,139,139,21,87,87,0,0,80,0,0,0,0,0,25,38,0,151,0,349,687,1,0,"
+
+[File 0008]
+Path Line0001 = "/x/PROYECTO/2013/2030734 D Fuentes de Corriente 1mA y 100mA Bajo ruido/CVI/Ejemp"
+Path Line0002 = "los/Cont Acq-Int Clk-Dig Start-Retriggerable/ContAcq-IntClk-DigStart-Retrig.uir"
+File Type = "User Interface Resource"
+Disk Date = 3454520784
+In Projects = "2,"
+Window Top = 32
+Window Left = 10
+Window Height = 349
+Window Width = 687
+Window Z-Order = 4
+
+[File 0009]
+Path Line0001 = "/x/PROYECTO/2013/2030734 D Fuentes de Corriente 1mA y 100mA Bajo ruido/CVI/Ejemp"
+Path Line0002 = "los/Synch AI-AO/SynchAI-AO.c"
+File Type = "CSource"
+Disk Date = 3454520812
+In Projects = "1,"
+Window Top = 32
+Window Left = 10
+Source Window State = "1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,152,0,200,4,349,607,1,0,"
+
+[File 0010]
+Path Line0001 = "/x/PROYECTO/2013/2030734 D Fuentes de Corriente 1mA y 100mA Bajo ruido/CVI/Ejemp"
+Path Line0002 = "los/Cont Acq-Int Clk-Every N Samples Event/ContAcq-IntClk-EveryNSamplesEvent.c"
+File Type = "CSource"
+Disk Date = 3467617395
+In Projects = "4,"
+Window Top = 152
+Window Left = 74
+Source Window State = "1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,349,687,1,0,"
+
+[File 0011]
+Path Line0001 = "/x/PROYECTO/2013/2030734 D Fuentes de Corriente 1mA y 100mA Bajo ruido/CVI/Ejemp"
+Path Line0002 = "los/Cont Acq-Int Clk-Every N Samples Event/ContAcq-IntClk-EveryNSamplesEvent.uir"
+File Type = "User Interface Resource"
+Disk Date = 3469694507
+In Projects = "4,"
+Window Top = 182
+Window Left = 90
+Window Height = 349
+Window Width = 687
+
+[File 0012]
+Path Line0001 = "/x/PROYECTO/2013/2030734 D Fuentes de Corriente 1mA y 100mA Bajo ruido/CVI/Ejemp"
+Path Line0002 = "los/Mis Pruebas/Prueba6/DAQTaskInProject.c"
+File Type = "CSource"
+Disk Date = 3469694892
+In Projects = "5,"
+Window Top = 332
+Window Left = 170
+Source Window State = "1,44,44,44,16,92,92,0,0,0,0,0,0,0,0,0,0,0,44,66,349,687,1,0,"
+
+[File 0013]
+Path Line0001 = "/x/PROYECTO/2013/2030734 D Fuentes de Corriente 1mA y 100mA Bajo ruido/CVI/Ejemp"
+Path Line0002 = "los/Mis Pruebas/Prueba6/DAQTaskInProject.h"
+File Type = "Include"
+Disk Date = 3469694892
+In Projects = "5,"
+Window Top = 362
+Window Left = 186
+Source Window State = "1,28,28,28,6,28,28,0,3,0,0,0,0,0,0,0,11,0,28,6,349,687,1,0,"
+
+[File 0014]
+Path Line0001 = "/x/PROYECTO/2013/2030734 D Fuentes de Corriente 1mA y 100mA Bajo ruido/CVI/Ejemp"
+Path Line0002 = "los/Mis Pruebas/Prueba6/DAQTaskInProject.mxb"
+File Type = "Unknown"
+Disk Date = 3469694892
+In Projects = "5,"
+
+[File 0015]
+Path Line0001 = "/x/PROYECTO/2013/2030734 D Fuentes de Corriente 1mA y 100mA Bajo ruido/CVI/Ejemp"
+Path Line0002 = "los/Mis Pruebas/Prueba6/DAQTaskInProjectExampleCode.c"
+File Type = "CSource"
+Disk Date = 3469695044
+In Projects = "5,"
+Window Top = 392
+Window Left = 202
+Source Window State = "1,78,78,78,13,45,45,0,0,0,0,0,0,0,0,0,0,0,46,11,349,687,1,0,"
+
+[File 0016]
+Path Line0001 = "/x/PROYECTO/2013/2030734 D Fuentes de Corriente 1mA y 100mA Bajo ruido/CVI/Ejemp"
+Path Line0002 = "los/Mis Pruebas/Prueba6/DAQTaskInProjectExampleCode.h"
+File Type = "Include"
+Disk Date = 3469695044
+In Projects = "5,"
+Window Top = 422
+Window Left = 218
+Source Window State = "1,18,18,18,6,25,25,0,3,0,0,0,0,0,0,0,0,0,18,6,349,687,1,0,"
+
+[File 0017]
+Path Line0001 = "/x/PROYECTO/2013/2030734 D Fuentes de Corriente 1mA y 100mA Bajo ruido/CVI/Ejemp"
+Path Line0002 = "los/Mis Pruebas/Prueba6/Prueba6.c"
+File Type = "CSource"
+Disk Date = 3467699343
+In Projects = "5,"
+Window Top = 302
+Window Left = 154
+Source Window State = "1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,21,45,349,687,1,0,"
+
+[File 0018]
+Path Line0001 = "/x/PROYECTO/2013/2030734 D Fuentes de Corriente 1mA y 100mA Bajo ruido/CVI/Ejemp"
+Path Line0002 = "los/Mis Pruebas/Prueba6/Prueba6.uir"
+File Type = "User Interface Resource"
+Disk Date = 3467699343
+In Projects = "5,"
+Window Top = 272
+Window Left = 138
+Window Height = 349
+Window Width = 687
+
+[File 0019]
+Path Line0001 = "/x/PROYECTO/2013/2030734 D Fuentes de Corriente 1mA y 100mA Bajo ruido/CVI/Ejemp"
+Path Line0002 = "los/Mis Pruebas/Ejemplo de uso callbackdata/cbdata.h"
+File Type = "Include"
+Disk Date = 2868425904
+In Projects = "6,"
+Source Window State = "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,"
+
+[Build Options 0001]
+Generate Browse Info = True
+Enable Uninitialized Locals Runtime Warning = True
+Execution Trace = "Disabled"
+Debugging Level = "Standard"
+Break On Library Errors = True
+Break On First Chance Exceptions = False
+Execution Target Address = "Local desktop computer"
+Execution Target Port = 0
+Execution Target Type = 0
+
+[SCC Options 0001]
+Use global settings = True
+SCC Provider = ""
+SCC Project = ""
+Local Path = ""
+Auxiliary Path = ""
+Perform Same Action For .h File As For .uir File = "Ask"
+Perform Same Action For .cds File As For .prj File = "Ask"
+Username = ""
+Comment = ""
+Use Default Username = False
+Use Default Comment = False
+Suppress CVI Error Messages = False
+Always show confirmation dialog = True
+
+[DLL Debugging Support 0001]
+External Process Path = ""
+
+[Command Line Args 0001]
+Command Line Args = ""
+
+[Build Options 0002]
+Generate Browse Info = True
+Enable Uninitialized Locals Runtime Warning = True
+Execution Trace = "Disabled"
+Debugging Level = "Standard"
+Break On Library Errors = True
+Break On First Chance Exceptions = False
+Execution Target Address = "Local desktop computer"
+Execution Target Port = 0
+Execution Target Type = 0
+
+[SCC Options 0002]
+Use global settings = True
+SCC Provider = ""
+SCC Project = ""
+Local Path = ""
+Auxiliary Path = ""
+Perform Same Action For .h File As For .uir File = "Ask"
+Perform Same Action For .cds File As For .prj File = "Ask"
+Username = ""
+Comment = ""
+Use Default Username = False
+Use Default Comment = False
+Suppress CVI Error Messages = False
+Always show confirmation dialog = True
+
+[DLL Debugging Support 0002]
+External Process Path = ""
+
+[Command Line Args 0002]
+Command Line Args = ""
+
+[Build Options 0003]
+Generate Browse Info = True
+Enable Uninitialized Locals Runtime Warning = True
+Execution Trace = "Disabled"
+Debugging Level = "Standard"
+Break On Library Errors = True
+Break On First Chance Exceptions = False
+Execution Target Address = "Local desktop computer"
+Execution Target Port = 0
+Execution Target Type = 0
+
+[SCC Options 0003]
+Use global settings = True
+SCC Provider = ""
+SCC Project = ""
+Local Path = ""
+Auxiliary Path = ""
+Perform Same Action For .h File As For .uir File = "Ask"
+Perform Same Action For .cds File As For .prj File = "Ask"
+Username = ""
+Comment = ""
+Use Default Username = False
+Use Default Comment = False
+Suppress CVI Error Messages = False
+Always show confirmation dialog = True
+
+[DLL Debugging Support 0003]
+External Process Path = ""
+
+[Command Line Args 0003]
+Command Line Args = ""
+
+[Build Options 0004]
+Generate Browse Info = True
+Enable Uninitialized Locals Runtime Warning = True
+Execution Trace = "Disabled"
+Debugging Level = "Standard"
+Break On Library Errors = True
+Break On First Chance Exceptions = False
+Execution Target Address = "Local desktop computer"
+Execution Target Port = 0
+Execution Target Type = 0
+
+[SCC Options 0004]
+Use global settings = True
+SCC Provider = ""
+SCC Project = ""
+Local Path = ""
+Auxiliary Path = ""
+Perform Same Action For .h File As For .uir File = "Ask"
+Perform Same Action For .cds File As For .prj File = "Ask"
+Username = ""
+Comment = ""
+Use Default Username = False
+Use Default Comment = False
+Suppress CVI Error Messages = False
+Always show confirmation dialog = True
+
+[DLL Debugging Support 0004]
+External Process Path = ""
+
+[Command Line Args 0004]
+Command Line Args = ""
+
+[Build Options 0005]
+Generate Browse Info = True
+Enable Uninitialized Locals Runtime Warning = True
+Execution Trace = "Disabled"
+Debugging Level = "Standard"
+Break On Library Errors = True
+Break On First Chance Exceptions = False
+Execution Target Address = "Local desktop computer"
+Execution Target Port = 0
+Execution Target Type = 0
+
+[SCC Options 0005]
+Use global settings = True
+SCC Provider = ""
+SCC Project = ""
+Local Path = ""
+Auxiliary Path = ""
+Perform Same Action For .h File As For .uir File = "Ask"
+Perform Same Action For .cds File As For .prj File = "Ask"
+Username = ""
+Comment = ""
+Use Default Username = False
+Use Default Comment = False
+Suppress CVI Error Messages = False
+Always show confirmation dialog = True
+
+[DLL Debugging Support 0005]
+External Process Path = ""
+
+[Command Line Args 0005]
+Command Line Args = ""
+
+[Build Options 0006]
+Generate Browse Info = True
+Enable Uninitialized Locals Runtime Warning = True
+Execution Trace = "Disabled"
+Debugging Level = "Standard"
+Break On Library Errors = True
+Break On First Chance Exceptions = False
+Execution Target Address = "Local desktop computer"
+Execution Target Port = 0
+Execution Target Type = 0
+
+[SCC Options 0006]
+Use global settings = True
+SCC Provider = ""
+SCC Project = ""
+Local Path = ""
+Auxiliary Path = ""
+Perform Same Action For .h File As For .uir File = "Ask"
+Perform Same Action For .cds File As For .prj File = "Ask"
+Username = ""
+Comment = ""
+Use Default Username = False
+Use Default Comment = False
+Suppress CVI Error Messages = False
+Always show confirmation dialog = True
+
+[DLL Debugging Support 0006]
+External Process Path = ""
+
+[Command Line Args 0006]
+Command Line Args = ""
+
