@@ -7,7 +7,7 @@ Fuentes de corriente de bajo ruido 1mA-100mA y 100nA a 1mA
 Desarrollado por SEGAINVEX-Electrónica para el Departamento de Física de la Materia
 Condensada de la UAM https://www.fmc.uam.es/
 # SOFTWARE DEL MICROCONTROLADOR
-https://github.com/SEGAINVEX-ELECTRONICA/Fuente_de_corriente_y_amplificador_bajo_ruido/blob/tree/main/Software_control_digital_LPC933
+https://github.com/SEGAINVEX-ELECTRONICA/Fuente_de_corriente_y_amplificador_bajo_ruido/tree/main/Software_control_digital_LPC933
 # FLASHING DEL MICROCONTROLADOR
 https://github.com/SEGAINVEX-ELECTRONICA/Fuente_de_corriente_y_amplificador_bajo_ruido/blob/main/ISP_NXP_Philips_89LPC9XX.pdf
 # TEST
@@ -18,8 +18,6 @@ https://github.com/SEGAINVEX-ELECTRONICA/Fuente_de_corriente_y_amplificador_bajo
 # PROYECTO ORCAD CAPTURE LAYOUT GERBERS
 https://github.com/SEGAINVEX-ELECTRONICA/Fuente-de-corriente-de-bajo-ruido/tree/master/Orcad_Capture_Layout_Gerbers
 # FOTOS
-![Alt text](https://github.com/SEGAINVEX-ELECTRONICA/Fuente_de_corriente_y_amplificador_bajo_ruido/blob/main/Fotos/IMG1.jpg "Optional title")
-![Alt text](https://github.com/SEGAINVEX-ELECTRONICA/Fuente_de_corriente_y_amplificador_bajo_ruido/blob/main/Fotos/IMG2.jpg "Optional title")
-![Alt text](https://github.com/SEGAINVEX-ELECTRONICA/Fuente_de_corriente_y_amplificador_bajo_ruido/blob/main/Fotos/IMG3.jpg "Optional title")
-![Alt text](https://github.com/SEGAINVEX-ELECTRONICA/Fuente_de_corriente_y_amplificador_bajo_ruido/blob/main/Fotos/IMG4.jpg "Optional title")
-
+![Alt text](https://github.com/SEGAINVEX-ELECTRONICA/Fuente_de_corriente_y_amplificador_bajo_ruido/blob/main/Fotos/IMG1.jpg "amplificador")
+![Alt text](https://github.com/SEGAINVEX-ELECTRONICA/Fuente_de_corriente_y_amplificador_bajo_ruido/blob/main/Fotos/IMG2.jpg "fuente de alimentación")
+![Alt text](https://github.com/SEGAINVEX-ELECTRONICA/Fuente_de_corriente_y_amplificador_bajo_ruido/blob/main/Fotos/IMG3.jpg "fuente de corriente")
