@@ -1,0 +1,526 @@
+C51 COMPILER V9.03   CONTROLFUENTECORRIENTE                                                07/23/2014 12:58:02 PAGE 1   
+
+
+C51 COMPILER V9.03, COMPILATION OF MODULE CONTROLFUENTECORRIENTE
+OBJECT MODULE PLACED IN ControlFuenteCorriente.OBJ
+COMPILER INVOKED BY: D:\Program Files (x86)\Keil_V9\C51\BIN\C51.EXE ControlFuenteCorriente.C BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          /* Proyecto OT:2030734
+   2          Para un microcontrolador P89LPC933
+   3          Implementa un teclado con 3 teclas y leds para indicar el estado del sistema.
+   4          
+   5          Con las teclas se actuan relés que configuran una fuente de corriente de 5
+   6          décadas. 
+   7          
+   8          Se comporta como un conmutador para seleccionar la corriente de salida
+   9          , un interruptor de 3 posiciones para seleccionar la referencia (interna, 
+  10          interna invertida o externa) y un conmutador de apagado encendido.
+  11          
+  12          Tras pulsar una tecla configura la fuente y entra en modo power down. Al
+  13          pulsar una tecla de nuevo despierta de power down.
+  14          
+  15          Para flasear el micro hay que encender el sistema pulsando la tecla ON_OFF,
+  16          El led ON_OFF parpadea durante 13 segundos. Durante ese tiempo se puede 
+  17          enviar un "Break Condition" con Flash Magic para que el micro entre en la
+  18          rutina del Bootloader.
+  19          
+  20          Patricio Coronado Universidad Autónoma de Madrid SEGAINVEX-ELECTRONICA
+  21          10 de julio de 2014. V1.0
+  22          */
+  23          // Ficheros include
+  24          //-------------------------------------------
+  25          #include "REG933.H"
+  26          #include <intrins.h>    //de la librería de Keil. Para poder usar _nop_()
+  27          //-------------------------------------------
+  28          // Declaración de tipos
+  29          enum e_tecla {sw_on_off,sw_reference,sw_range,sw_error}; // Para el estado las teclas
+  30          enum e_rango {i10uA, i100uA, i1mA, i10mA, i100mA}; // Para el estado de la corriente de salida
+  31          enum e_fuente {encendida, apagada}; // Para el estado de la salida
+  32          enum e_referencia {interna, interna_invertida, externa}; // Para el estado de la referencia
+  33          //-------------------------------------------
+  34          // Prototipos de funciones
+  35          void keypad_isr  (  void  );
+  36          void timers_isr1  (  void  );
+  37          void osc_init  (  void  );
+  38          void timers_init  (  void  );
+  39          void keypad_init  (  void  );
+  40          void uart_init  (  void  );
+  41          void ports_init  (  void  );
+  42          void configura_fuente_de_corriente(enum e_tecla);
+  43          enum e_tecla detecta_tecla_pulsada(void);
+  44          //-------------------------------------------
+  45          // Definición de pines de la aplicación
+  46          // define pin names
+  47          sbit p00                        = P0 ^ 0;
+  48          sbit SW_ON_OFF          = P0 ^ 1;
+  49          sbit SW_REFERENCE       = P0 ^ 2;
+  50          sbit SW_RANGE           = P0 ^ 3;
+  51          sbit RELE_ON_OFF        = P0 ^ 4;
+  52          sbit RELE_IN_EX         = P0 ^ 5;
+  53          sbit p06                        = P0 ^ 6;
+  54          sbit p07                        = P0 ^ 7;
+  55          sbit LED_1MA            = P1 ^ 2;
+C51 COMPILER V9.03   CONTROLFUENTECORRIENTE                                                07/23/2014 12:58:02 PAGE 2   
+
+  56          sbit LED_10MA           = P1 ^ 3;
+  57          sbit LED_100MA          = P1 ^ 4;
+  58          sbit RELE_NIVEL_2       = P1 ^ 6;
+  59          sbit RELE_NIVEL_1       = P1 ^ 7;
+  60          sbit LED_ON_OFF         = P2 ^ 0;
+  61          sbit LED_REF_EXT        = P2 ^ 1;
+  62          sbit LED_100UA          = P2 ^ 2;
+  63          sbit LED_10UA           = P2 ^ 3;
+  64          sbit p24                        = P2 ^ 4;
+  65          sbit p25                        = P2 ^ 5;
+  66          sbit LED_REF_INT_INV = P2 ^ 6;
+  67          sbit LED_REF_INT        = P2 ^ 7;
+  68          sbit RELE_REF           = P3 ^ 0;
+  69          sbit RELE_NIVEL_3       = P3 ^ 1;
+  70          //---------------------------------------------------------------------------------
+  71          // Variables globales
+  72          bit tecla_valida = 0;
+  73          unsigned char pulsadores;
+  74          unsigned int CiclosEspera,Contador;
+  75          // Estatus del sistema
+  76          enum e_rango rango;
+  77          enum e_fuente fuente;
+  78          enum e_referencia referencia;
+  79          bit flag=1; // Bit para depurar
+  80          bit pwdw=0; // Para que entre en power down de forma condicional
+  81          //---------------------------------------------------------------------------------
+  82          // Constantes
+  83          #define RELE_ON 1
+  84          #define RELE_OFF 0
+  85          #define LED_ON 0
+  86          #define LED_OFF 1
+  87          // Para depurar
+  88          #define TEST    if (flag) {LED_100MA=LED_ON;flag=0;} else {LED_100MA=LED_OFF;flag=1;}
+  89          
+  90          //---------------------------------------------------------------------------------
+  91          //                                                                      main
+  92          //---------------------------------------------------------------------------------
+  93          void main(void)
+  94          {
+  95   1              osc_init(); // Inicializamos el oscilador interno
+  96   1              ports_init(); // Lo primero coloca los pines con valores adecuados
+  97   1              uart_init(); // Configura la UART para poder flasear el micro   
+  98   1              if(!SW_ON_OFF)//Si está pulsada la tecla para flasear espera un "Break Condition"
+  99   1              {       
+ 100   2                      // Aviso luminoso de que la UART espera un "Break Condition"
+ 101   2                      for(CiclosEspera = 0;CiclosEspera<=200;CiclosEspera++) // Unos 13 segundos
+ 102   2                      {                       
+ 103   3                              LED_ON_OFF = LED_ON;
+ 104   3                              while (--Contador);
+ 105   3                                      Contador=15000; // 
+ 106   3                              LED_ON_OFF = LED_OFF;
+ 107   3                          while (--Contador);
+ 108   3                                      Contador=15000; // 
+ 109   3                      }
+ 110   2                      LED_ON_OFF= LED_OFF;// Se terminó el tiempo de espera de un "Break Condition" por la UART
+ 111   2              }//del if(!SW_ON_OFF) 
+ 112   1              // Inicialización del funcionamiento normal
+ 113   1              timers_init(); // Inicializa el timer 1 para hacer de antirebote de los pulsadores
+ 114   1              keypad_init(); // Inicializa el teclado, mascara e interrupción
+ 115   1              EBO=1; // Habilita brownout detect
+ 116   1              EA=1; // Habilita interrupciones en bloque
+ 117   1              while(1) // bucle infinito
+C51 COMPILER V9.03   CONTROLFUENTECORRIENTE                                                07/23/2014 12:58:02 PAGE 3   
+
+ 118   1              {
+ 119   2                      if(pwdw) // Si se activa el flag para entrar en power down, lo hace
+ 120   2                      {
+ 121   3                              pwdw=0; // Borra el flag que le permite entrar en el if del power down
+ 122   3                              // Esto es necesario para que no se aniden interrupciones del teclado
+ 123   3                              // y se quede en estado de que no sale del power down
+ 124   3                              KBCON &= 0xFE; // reset keyb interrupt flag
+ 125   3                              EKBI = 1; // enable keyb interrupt  
+ 126   3                              PCON |= 0x03;// Total power down
+ 127   3                              _nop_();_nop_();_nop_();_nop_();_nop_();_nop_();
+ 128   3                      } //if(pwdw) 
+ 129   2              } // While
+ 130   1      }
+ 131          
+ 132          /***********************************************************************
+ 133          DESC:    Initializes UART for mode 1
+ 134                   Baudrate: 9600
+ 135          RETURNS: Nothing
+ 136          CAUTION: If interrupts are being used then EA must be set to 1
+ 137                   after calling this function
+ 138          ************************************************************************/
+ 139          void uart_init  (  void  )
+ 140          {
+ 141   1        // configure UART
+ 142   1        // clear SMOD0
+ 143   1        PCON &= ~0x40;
+ 144   1        SCON = 0x50;
+ 145   1        // set or clear SMOD1
+ 146   1        PCON &= 0x7f;
+ 147   1        PCON |= (0 << 8);
+ 148   1        SSTAT = 0x00;
+ 149   1        // enable break detect
+ 150   1        AUXR1 |= 0x40;
+ 151   1        // configure baud rate generator
+ 152   1        BRGCON = 0x00;
+ 153   1        BRGR0 = 0xF0;
+ 154   1        BRGR1 = 0x02;
+ 155   1        BRGCON = 0x03;
+ 156   1        // Configura los pines de la UART
+ 157   1        // TxD = push-pull, RxD = input
+ 158   1        P1M1 &= ~0x01;
+ 159   1        P1M2 |= 0x01;
+ 160   1        P1M1 |= 0x02;
+ 161   1        P1M2 &= ~0x02;
+ 162   1        // set isr priority to 0
+ 163   1        IP0 &= 0xEF;
+ 164   1        IP0H &= 0xEF;
+ 165   1        // disable uart interrupt
+ 166   1        // Como no vamos a comunicar, es mejor desabilitar la interrupción
+ 167   1        // si no, con el pin al aire entra en la interrupción y se pierde
+ 168   1        ES = 0; 
+ 169   1        
+ 170   1      } // uart_init
+ 171          /***********************************************************************
+ 172          DESC:    Inicializa las teclas, la interrupción del teclado y la máscara
+ 173          RETURNS: Nothing
+ 174          CAUTION: EA must be set to 1 after calling this function
+ 175          ************************************************************************/
+ 176          void keypad_init  (  void  )
+ 177          {
+ 178   1        // define pattern
+ 179   1        KBPATN = 0x0E;
+C51 COMPILER V9.03   CONTROLFUENTECORRIENTE                                                07/23/2014 12:58:02 PAGE 4   
+
+ 180   1        // define P0 pins that trigger interrupt
+ 181   1        KBMASK = 0x0E;
+ 182   1        // pattern must not match
+ 183   1        KBCON = 0x00;
+ 184   1        // set P0 pins as inputs
+ 185   1        P0M1 |= 0x0E;
+ 186   1        P0M2 &= ~0x0E;
+ 187   1      // set isr priority to 3
+ 188   1        IP1 &= 0xFD;
+ 189   1        IP1H &= 0xFD;
+ 190   1        IP1 |= 0x02;
+ 191   1        IP1H |= 0x02;
+ 192   1        // Habilita la interrupción del teclado
+ 193   1        EKBI = 1;
+ 194   1      }
+ 195          /***********************************************************************
+ 196          DESC:    Inicializa los pines de los puertos para relés o leds y 
+ 197                           pone la fuente en su estado por defecto
+ 198          RETURNS: Nothing
+ 199          CAUTION: Call before the initialization functions of other peripherals
+ 200          ************************************************************************/
+ 201          void ports_init  (  void  )
+ 202          {
+ 203   1      // Configuración de los pines
+ 204   1      // Los pines de la UART y el teclado no se configuran aquí
+ 205   1               P0M1 &= 0xCE;
+ 206   1               P0M2 |= 0x31;
+ 207   1               P1M1 &= 0x3F;
+ 208   1               P1M1 |= 0x3C;
+ 209   1               P1M2 &= 0xDF;
+ 210   1               P1M2 |= 0xDC;
+ 211   1               P2M1 &= 0xCF;
+ 212   1               P2M1 |= 0xCF;
+ 213   1               P2M2 &= 0xCF;
+ 214   1               P2M2 |= 0xCF;
+ 215   1               P3M1 &= 0xFC;
+ 216   1               P3M2 |= 0x03;
+ 217   1              // Coloca los pines en la posición inicial
+ 218   1              RELE_ON_OFF             = RELE_OFF;
+ 219   1              RELE_IN_EX              = RELE_OFF;
+ 220   1              RELE_REF                = RELE_OFF;
+ 221   1              RELE_NIVEL_3    = RELE_OFF;
+ 222   1              RELE_NIVEL_2    = RELE_OFF;
+ 223   1              RELE_NIVEL_1    = RELE_OFF;
+ 224   1              LED_10UA                = LED_ON;
+ 225   1              LED_100UA               = LED_OFF;
+ 226   1              LED_1MA                 = LED_OFF;
+ 227   1              LED_10MA                = LED_OFF;
+ 228   1              LED_100MA               = LED_OFF;
+ 229   1              LED_ON_OFF              = LED_OFF;
+ 230   1              LED_REF_EXT     = LED_ON;
+ 231   1              LED_REF_INT_INV = LED_OFF;
+ 232   1              LED_REF_INT     = LED_OFF;
+ 233   1              // Estatus del sistema tras reset o encendido
+ 234   1              rango = i10uA;
+ 235   1              fuente = apagada;
+ 236   1              referencia = externa;
+ 237   1      } // ports_init
+ 238          /***********************************************************************
+ 239          DESC:    Initializes the oscillator to generate a CPU clock at
+ 240                   7.3728 MHz
+ 241          
+C51 COMPILER V9.03   CONTROLFUENTECORRIENTE                                                07/23/2014 12:58:02 PAGE 5   
+
+ 242                   Uses on-chip oscillator
+ 243          RETURNS: Nothing
+ 244          ************************************************************************/
+ 245          extern void osc_init  (  void  )
+ 246          {
+ 247   1        // clock divider
+ 248   1        DIVM = 0x00;
+ 249   1        // no clock out on CLKOUT pin
+ 250   1        TRIM &= ~0x40;
+ 251   1        // select low power clock (CPU Clock 8MHz or less)
+ 252   1      //  AUXR1 |= 0x80;
+ 253   1      } // osc_init
+ 254          /***********************************************************************
+ 255          DESC:    Initializes timers
+ 256                   Timer 0 is not used
+ 257                   Timer 1 generates an interrupt every 17.7ms
+ 258          RETURNS: Nothing
+ 259          CAUTION: If interrupts are being used then EA must be set to 1
+ 260                   after calling this function
+ 261          ************************************************************************/
+ 262          void timers_init   (  void  )
+ 263          {
+ 264   1        // configure timer 1
+ 265   1        TMOD &= 0x0F;
+ 266   1        TMOD |= 0x10;
+ 267   1        TAMOD &= 0xEF;
+ 268   1        // timer values
+ 269   1        TH1 = 0x01;
+ 270   1        TL1 = 0x1E;
+ 271   1        // set timer 1 isr priority to 0
+ 272   1        //IP0 &= 0xF7;
+ 273   1        //IP0H &= 0xF7;
+ 274   1        // enable timer 1 interrupt
+ 275   1        ET1 = 1;
+ 276   1      } // timers_init
+ 277          /***********************************************************************
+ 278          DESC:    Keypad Interrupt Service Routine
+ 279          RETURNS: Nothing
+ 280          CAUTION: keypad_init must be called first
+ 281                   EA must be set to 1
+ 282          ************************************************************************/
+ 283          void keypad_isr  (  void  ) interrupt 7 using 1
+ 284          {
+ 285   1        // clear interrupt flag
+ 286   1              EKBI = 0; // disable keyb interrupt
+ 287   1              TR1 = 1; // start timer1
+ 288   1      }
+ 289          
+ 290          /***********************************************************************
+ 291          DESC:    Timer 1 Interrupt Service Routine
+ 292          RETURNS: Nothing
+ 293          CAUTION: timers_init must be called first
+ 294                   EA must be set to 1
+ 295          ************************************************************************/
+ 296          void timers_isr1  (  void  ) interrupt 3 using 2
+ 297          {
+ 298   1              enum e_tecla tecla_pulsada;
+ 299   1              TR1 = 0; // detiene el timer
+ 300   1              // Lee el estado de los pulsadores
+ 301   1              pulsadores = P0; // salva el valor del puerto 0
+ 302   1              pulsadores |= 0xF1; // Pone a 1 los bits 0, 4, 5, 6 y 7 de pulsadores
+ 303   1              if (pulsadores != 0xFF) // Si pulsadores es distinto de FF se han pulsado teclas
+C51 COMPILER V9.03   CONTROLFUENTECORRIENTE                                                07/23/2014 12:58:02 PAGE 6   
+
+ 304   1              { 
+ 305   2                      tecla_pulsada = detecta_tecla_pulsada(); // Mira que tecla es
+ 306   2                      if (tecla_valida ) // y si es una tecla válida...
+ 307   2                      {
+ 308   3                              configura_fuente_de_corriente(tecla_pulsada);// Actua sobre la fuente
+ 309   3                      }
+ 310   2              }
+ 311   1              // Espera a que se suelte la tecla antes de habilitar de nuevo la interrupción del teclado
+ 312   1              while (pulsadores!=0xFF) // Lee el teclado hasta que se suelta la tecla 
+ 313   1              {
+ 314   2                      pulsadores = P0; // salva el valor del puerto 0
+ 315   2                      pulsadores |= 0xF1; // Pone a 1 los bits 5,6 y 7 de pulsadores
+ 316   2              }
+ 317   1              pwdw=1; // Flag para que vuelva a power down en el bucle infinito del main
+ 318   1              KBCON &= 0xFE; // reset keyb interrupt flag
+ 319   1              EKBI = 1; // enable keyb interrupt  
+ 320   1      } // timers_isr1
+ 321          /***********************************************************************
+ 322          DESC:           determina que tecla se ha pulsado. Modifica el flag
+ 323                                  tecla_valida                    
+ 324          RETURNS: sw_on_off,sw_reference,sw_range,sw_error
+ 325          
+ 326          ************************************************************************/
+ 327          enum e_tecla detecta_tecla_pulsada(void)
+ 328          {
+ 329   1              enum e_tecla tecla_detectada;
+ 330   1              switch (pulsadores)
+ 331   1              {
+ 332   2                      case 0xFD: // Tecla ON_OFF
+ 333   2                              tecla_detectada = sw_on_off;
+ 334   2                              tecla_valida=1;                 
+ 335   2                      break;     
+ 336   2                      case 0xFB: // Tecla REFERENCE
+ 337   2                              tecla_detectada = sw_reference;
+ 338   2                              tecla_valida=1;                 
+ 339   2                      break;
+ 340   2                      case 0xF7: // Tecla RANGE
+ 341   2                              tecla_detectada = sw_range;
+ 342   2                              tecla_valida=1;                 
+ 343   2                      break;
+ 344   2                      default: // Cualquier otro valor
+ 345   2                      tecla_detectada = sw_error;
+ 346   2                      tecla_valida=0; 
+ 347   2                      break;
+ 348   2              }
+ 349   1      return tecla_detectada;
+ 350   1      }
+ 351          /***********************************************************************
+ 352          DESC:    configura los relés y los leds de la fuente de corriente
+ 353          RETURNS: nada
+ 354          ************************************************************************/
+ 355          void configura_fuente_de_corriente(enum e_tecla tecla_pulsada)
+ 356          {
+ 357   1              switch (tecla_pulsada)
+ 358   1              {
+ 359   2              //.......Se ha pulsado la tecla de ON_OFF.................... 
+ 360   2                      case sw_on_off:
+ 361   2                      // Cambia el estado de la salida de la fuente
+ 362   2                              switch(fuente)
+ 363   2                              {
+ 364   3                                      case encendida: // Cambia a apagada
+ 365   3                                              fuente = apagada;
+C51 COMPILER V9.03   CONTROLFUENTECORRIENTE                                                07/23/2014 12:58:02 PAGE 7   
+
+ 366   3                                              RELE_ON_OFF=RELE_OFF;
+ 367   3                                              LED_ON_OFF=LED_OFF;
+ 368   3                                      break;
+ 369   3                                      case apagada: // Cambia a encendida
+ 370   3                                              fuente = encendida;
+ 371   3                                              RELE_ON_OFF = RELE_ON;  
+ 372   3                                              LED_ON_OFF=LED_ON;
+ 373   3                                      break;
+ 374   3                              } // switch(fuente)
+ 375   2                      break; // case sw_on_off
+ 376   2      
+ 377   2              //.......Se ha pulsado la tecla de REFERENCE.................... 
+ 378   2                      case sw_reference:
+ 379   2                      // Primero apaga la fuente
+ 380   2                              RELE_ON_OFF=RELE_OFF;
+ 381   2                              LED_ON_OFF=LED_OFF;
+ 382   2                              fuente = apagada;
+ 383   2                      // Cambia el estado de la referencia
+ 384   2                              switch (referencia)
+ 385   2                              {
+ 386   3                                      case interna:
+ 387   3                                      // Cambia a referencia interna invertida
+ 388   3                                              LED_REF_EXT     = LED_OFF;
+ 389   3                                              LED_REF_INT     = LED_OFF;
+ 390   3                                              LED_REF_INT_INV = LED_ON;
+ 391   3                                              RELE_IN_EX              = RELE_ON;
+ 392   3                                              RELE_REF                = RELE_ON;
+ 393   3                                              referencia = interna_invertida; // Estado actual de la referencia
+ 394   3                                      break;
+ 395   3                                      case interna_invertida:
+ 396   3                                      // Cambia a referencia externa
+ 397   3                                              LED_REF_INT_INV = LED_OFF;
+ 398   3                                              LED_REF_INT     = LED_OFF;
+ 399   3                                              LED_REF_EXT     = LED_ON;
+ 400   3                                              RELE_REF                = RELE_OFF;
+ 401   3                                              RELE_IN_EX              = RELE_OFF;
+ 402   3                                              referencia = externa; // Estado actual de la referencia
+ 403   3                                      break;
+ 404   3                                      case externa:
+ 405   3                                      // Cambia a referencia interna
+ 406   3                                              LED_REF_EXT     = LED_OFF;
+ 407   3                                              LED_REF_INT_INV = LED_OFF;
+ 408   3                                              LED_REF_INT     = LED_ON;
+ 409   3                                              RELE_IN_EX              = RELE_ON;
+ 410   3                                              RELE_REF                = RELE_OFF;
+ 411   3                                              referencia = interna; // Estado actual de la referencia
+ 412   3                                      break;
+ 413   3                              }//switch (referencia)
+ 414   2                      break; // case sw_reference
+ 415   2              //........Se ha cambiado es estado de la referencia............. 
+ 416   2              //.......Se ha pulsado la tecla de RANGE........................ 
+ 417   2                      case sw_range:
+ 418   2                      // Primero apaga la fuente
+ 419   2                              RELE_ON_OFF=RELE_OFF;
+ 420   2                              LED_ON_OFF=LED_OFF;
+ 421   2                              fuente = apagada;
+ 422   2                              // Cambia el rango de la fuente
+ 423   2                              switch(rango)
+ 424   2                              {
+ 425   3                                      case i10uA:// Cambia a 100uA
+ 426   3                                              LED_10UA=LED_OFF;
+ 427   3                                              LED_1MA=LED_OFF;
+C51 COMPILER V9.03   CONTROLFUENTECORRIENTE                                                07/23/2014 12:58:02 PAGE 8   
+
+ 428   3                                              LED_10MA=LED_OFF;
+ 429   3                                              LED_100MA=LED_OFF;
+ 430   3                                              LED_100UA=LED_ON;
+ 431   3                                              RELE_NIVEL_2=RELE_OFF;
+ 432   3                                              RELE_NIVEL_1=RELE_OFF;                                  
+ 433   3                                              RELE_NIVEL_3=RELE_ON;
+ 434   3                                              rango=i100uA;                                   
+ 435   3                                      break;// case i10uA
+ 436   3                                      case i100uA: // Cambia a 1mA
+ 437   3                                              LED_10UA=LED_OFF;
+ 438   3                                              LED_100UA=LED_OFF;
+ 439   3                                              LED_10MA=LED_OFF;
+ 440   3                                              LED_100MA=LED_OFF;
+ 441   3                                              LED_1MA=LED_ON;
+ 442   3                                              RELE_NIVEL_2=RELE_OFF;
+ 443   3                                              RELE_NIVEL_3=RELE_OFF;                                  
+ 444   3                                              RELE_NIVEL_2=RELE_ON;
+ 445   3                                              rango=i1mA;                                     
+ 446   3                                              break;// case i100uA
+ 447   3                                      case i1mA:// Cambia a 10mA
+ 448   3                                              LED_10UA=LED_OFF;
+ 449   3                                              LED_100UA=LED_OFF;
+ 450   3                                              LED_1MA=LED_OFF;
+ 451   3                                              LED_100MA=LED_OFF;
+ 452   3                                              LED_10MA=LED_ON;
+ 453   3                                              RELE_NIVEL_3=RELE_OFF;
+ 454   3                                              RELE_NIVEL_2=RELE_ON;                                   
+ 455   3                                              RELE_NIVEL_1=RELE_ON;
+ 456   3                                              rango = i10mA;
+ 457   3                                      break;// case i1mA
+ 458   3                                      case i10mA:// Cambia a 100mA
+ 459   3                                              LED_10UA=LED_OFF;
+ 460   3                                              LED_100UA=LED_OFF;
+ 461   3                                              LED_1MA=LED_OFF;
+ 462   3                                              LED_10MA=LED_OFF;
+ 463   3                                              LED_100MA=LED_ON;
+ 464   3                                              RELE_NIVEL_3=RELE_ON;
+ 465   3                                              RELE_NIVEL_2=RELE_ON;
+ 466   3                                              RELE_NIVEL_1=RELE_ON;
+ 467   3                                              rango = i100mA;                                 
+ 468   3                                      break;// case i10mA
+ 469   3                                      case i100mA: // Cambia a 10uA
+ 470   3                                              LED_100MA=LED_OFF;
+ 471   3                                              LED_100UA=LED_OFF;
+ 472   3                                              LED_1MA=LED_OFF;
+ 473   3                                              LED_10MA=LED_OFF;
+ 474   3                                              LED_10UA=LED_ON;
+ 475   3                                              RELE_NIVEL_3=RELE_OFF;
+ 476   3                                              RELE_NIVEL_2=RELE_OFF;
+ 477   3                                              RELE_NIVEL_1=RELE_OFF;
+ 478   3                                              rango = i10uA;
+ 479   3                                      break;// case i100mA
+ 480   3                              }//switch(range)
+ 481   2                      break; // case sw_range
+ 482   2              //.......Se ha configurado el RANGE........................ 
+ 483   2                      default:
+ 484   2                      break;
+ 485   2              }
+ 486   1      }
+ 487          /************************************************************************/
+
+
+C51 COMPILER V9.03   CONTROLFUENTECORRIENTE                                                07/23/2014 12:58:02 PAGE 9   
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    628    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      8       1
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      3    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

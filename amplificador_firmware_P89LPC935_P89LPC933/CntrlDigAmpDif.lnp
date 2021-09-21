@@ -1,0 +1,4 @@
+"START900.obj",
+"ControlDigitalAmpDifP89LPC935.obj" 
+TO "CntrlDigAmpDif" 
+RAMSIZE(256) 

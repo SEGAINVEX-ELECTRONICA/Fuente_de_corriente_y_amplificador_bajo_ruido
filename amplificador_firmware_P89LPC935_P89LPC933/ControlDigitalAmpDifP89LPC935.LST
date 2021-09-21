@@ -1,0 +1,604 @@
+C51 COMPILER V9.03   CONTROLDIGITALAMPDIFP89LPC935                                         03/02/2015 13:49:12 PAGE 1   
+
+
+C51 COMPILER V9.03, COMPILATION OF MODULE CONTROLDIGITALAMPDIFP89LPC935
+OBJECT MODULE PLACED IN ControlDigitalAmpDifP89LPC935.OBJ
+COMPILER INVOKED BY: D:\Program Files (x86)\Keil_V9\C51\BIN\C51.EXE ControlDigitalAmpDifP89LPC935.C BROWSE DEBUG OBJECTE
+                    -XTEND
+
+line level    source
+
+   1          /* Proyecto OT:2030735
+   2          Para un microcontrolador P89LPC935
+   3          Implementa un teclado con 3 teclas y leds para indicar el estado del sistema.
+   4          
+   5          Con las teclas se actuan relés y bits que configuran el estado de un amplificador 
+   6          de instrumentación.     Configura la ganancia (1,10,100,1000), pulsador "ganancia"
+   7          el filtro de salida (sin filtro, 2º orden, 4º orden) pulsador "filtro" y si
+   8          la entrada es en AC o DC pulsador "entrada AC".
+   9          
+  10          Tras pulsar una tecla, sale de power down configura el amplificador y entra en 
+  11          modo power down otra vez.
+  12          
+  13          Para flasear el micro hay que encender el sistema pulsando la tecla "entrada AC",
+  14          El led "entrada AC" parpadea durante 13 segundos. Durante ese tiempo se puede 
+  15          enviar un "Break Condition" con Flash Magic para que el micro entre en la
+  16          rutina del Bootloader.
+  17          
+  18          Patricio Coronado Universidad Autónoma de Madrid SEGAINVEX-ELECTRONICA
+  19          enero de 2015. V1.0
+  20          */
+  21          // Para acciónes a realizar en modo depuración. Comentar(evitar que se compile) antes de compilar definiti
+             -vamente
+  22          // #define DEPURACION
+  23          //
+  24          // Ficheros include
+  25          #include <REG935.H>
+  26          #include <intrins.h>    //de la librería de Keil. Para poder usar _nop_()
+  27          // Declaración de tipos para definir el estado del amplificador
+  28          enum e_tecla {sw_entrada_no,sw_ganancia,sw_filtro,sw_error,power_on}; // Para el estado la tecla pulsada
+  29          enum e_ganancia {uno, diez, cien, mil}; // Para el estado de la ganancia
+  30          enum e_filtro {sin_filtro, segundo_orden, cuarto_orden}; // Para el estado del filtro
+  31          enum e_entrada {entrada_no, entrada_si}; // Para el estado de la entrada
+  32          // Prototipos de funciones
+  33          void keypad_isr  (  void  );
+  34          void timers_isr1  (  void  );
+  35          void osc_init  (  void  );
+  36          void timers_init  (  void  );
+  37          void keypad_init  (  void  );
+  38          void uart_init  (  void  );
+  39          void uart_transmit  (unsigned char value);
+  40          void ports_init  (  void  );
+  41          void configura_filtro(enum e_filtro);
+  42          void configura_entrada(enum e_entrada);
+  43          void configura_ganancia(enum e_ganancia);
+  44          void configura_estado(void);
+  45          void configura_amplificador(enum e_tecla);
+  46          enum e_tecla detecta_tecla_pulsada(void);
+  47          // Variables globales
+  48          bit tecla_valida = 0;
+  49          unsigned char pulsadores;
+  50          //unsigned char estado, estado_entrada, estado_filtro,estado_ganancia; // Para escribir en la EEPROM
+  51          unsigned int CiclosEspera,Contador;
+  52          // Estatus del sistema
+  53          enum e_ganancia Ganancia;
+C51 COMPILER V9.03   CONTROLDIGITALAMPDIFP89LPC935                                         03/02/2015 13:49:12 PAGE 2   
+
+  54          enum e_filtro Filtro;
+  55          enum e_entrada Entrada;
+  56          bit flag=1; // Bit para depurar
+  57          bit pwdw=0; // Para que entre en power down de forma condicional
+  58          // Constantes
+  59          #define RELE_ON 1
+  60          #define RELE_OFF 0
+  61          #define LED_ON 0
+  62          #define LED_OFF 1
+  63          #define BIT_OFF 0
+  64          #define BIT_ON 1
+  65          // Macro y bit de "modo test" para transmitir por la uart cuando está en modo DEPURACION
+  66          #define test(byte_a_transmitir) if(modo_test){uart_transmit(byte_a_transmitir);}   
+  67          //Bit para comprobar que se está en modo DEPURACION
+  68          #ifdef DEPURACION
+              bit modo_test = 1;
+              #else bit  = 0;
+  71          #endif
+  72          // Definición de pines de la aplicación
+  73          sbit SW_AC                      = P0 ^ 1; // PULSADORES
+  74          sbit SW_FILTRO          = P0 ^ 2;
+  75          sbit SW_GANANCIA        = P0 ^ 3;
+  76          sbit BIT_A0                     = P3 ^ 1; // BITS
+  77          sbit BIT_A1                     = P0 ^ 5;
+  78          sbit RELE_AC            = P1 ^ 6; // RELES
+  79          sbit RELE_FILTRO        = P3 ^ 0;
+  80          sbit RELE_ORDEN         = P0 ^ 4;
+  81          sbit LED_AC                     = P2 ^ 0; //LEDS
+  82          sbit LED_4POLOS         = P2 ^ 1;
+  83          sbit LED_2POLOS         = P2 ^ 7;
+  84          sbit LED_SIN_FILTRO = P2 ^ 6;
+  85          sbit LED_G_1            = P2 ^ 2;
+  86          sbit LED_G_10           = P1 ^ 2;
+  87          sbit LED_G_100          = P1 ^ 3;
+  88          sbit LED_G_1000         = P1 ^ 4;
+  89          /**********************************************************************************/
+  90          void main(void)
+  91          {
+  92   1              osc_init(); // Inicializamos el oscilador interno
+  93   1              ports_init(); // configura los pines
+  94   1              uart_init(); // Configura la UART para poder flasear el micro   
+  95   1              if(!SW_AC)//Si está pulsada la tecla para flasear espera un "Break Condition"
+  96   1              {       
+  97   2                      // Aviso luminoso de que la UART espera un "Break Condition"
+  98   2                      for(CiclosEspera = 0;CiclosEspera<=200;CiclosEspera++) // Unos 13 segundos
+  99   2                      {                       
+ 100   3                              LED_AC = LED_ON;
+ 101   3                              while (--Contador);
+ 102   3                                      Contador=15000; // 
+ 103   3                              LED_AC = LED_OFF;
+ 104   3                          while (--Contador);
+ 105   3                                      Contador=15000; // 
+ 106   3                      }
+ 107   2                      LED_AC= LED_OFF;// Se terminó el tiempo de espera de un "Break Condition" por la UART
+ 108   2              }//del if(!SW_AC) 
+ 109   1              // Inicialización del funcionamiento normal
+ 110   1              configura_estado(); // Pone ganancia, entrada y filtro por defecto
+ 111   1              //EBO=1; // Habilita brownout detect ?? Quitar esto
+ 112   1              timers_init(); // Inicializa el timer 1 para hacer de antirebote de los pulsadores
+ 113   1              keypad_init(); // Inicializa el teclado, mascara e interrupción
+ 114   1              EA=1; // Habilita interrupciones en bloque
+ 115   1              uart_transmit('a'); // Para evitar un warning en la compilación
+C51 COMPILER V9.03   CONTROLDIGITALAMPDIFP89LPC935                                         03/02/2015 13:49:12 PAGE 3   
+
+ 116   1              while(1) // bucle infinito
+ 117   1              {
+ 118   2                      if(pwdw) // Si está activo el flag para activar el power down lo hace
+ 119   2                      {
+ 120   3                              pwdw=0; // Borra el flag que le permite entrar en el if del power down
+ 121   3                              // Esto es necesario para que no se aniden interrupciones del teclado
+ 122   3                              // y se quede en estado de que no sale del power down
+ 123   3                              KBCON &= 0xFE; // reset keyb interrupt flag para evitar que se aniden interrupciones
+ 124   3                              EKBI = 1; // enable keyb interrupt  
+ 125   3                              #ifndef DEPURACION
+ 126   3                              PCON |= 0x03;// Total power down
+ 127   3                              #endif
+ 128   3                              _nop_();_nop_();_nop_();_nop_();_nop_();_nop_();
+ 129   3                      } //if(pwdw) 
+ 130   2              } // While
+ 131   1      }
+ 132          /***********************************************************************
+ 133          DESC:    Initializes UART for mode 1
+ 134                   Baudrate: 9600
+ 135          RETURNS: Nothing
+ 136          CAUTION: If interrupts are being used then EA must be set to 1
+ 137                   after calling this function
+ 138          ************************************************************************/
+ 139          void uart_init  (  void  )
+ 140          {
+ 141   1        // configure UART
+ 142   1        // clear SMOD0
+ 143   1        PCON &= ~0x40;
+ 144   1        SCON = 0x50;
+ 145   1        // set or clear SMOD1
+ 146   1        PCON &= 0x7f;
+ 147   1        PCON |= (0 << 8);
+ 148   1        SSTAT = 0x00;
+ 149   1        // enable break detect
+ 150   1        AUXR1 |= 0x40;
+ 151   1        // configure baud rate generator
+ 152   1        BRGCON = 0x00;
+ 153   1        BRGR0 = 0xF0;
+ 154   1        BRGR1 = 0x02;
+ 155   1        BRGCON = 0x03;
+ 156   1        // Configura los pines de la UART
+ 157   1        // TxD = push-pull, RxD = input
+ 158   1        P1M1 &= ~0x01;
+ 159   1        P1M2 |= 0x01;
+ 160   1        P1M1 |= 0x02;
+ 161   1        P1M2 &= ~0x02;
+ 162   1        // set isr priority to 0
+ 163   1        IP0 &= 0xEF;
+ 164   1        IP0H &= 0xEF;
+ 165   1        // disable uart interrupt
+ 166   1        // Como no vamos a comunicar, es mejor desabilitar la interrupción
+ 167   1        // si no, con el pin al aire entra en la interrupción y el micro
+ 168   1        // se pierde al no definir una función para servir a la interrupción
+ 169   1        ES = 0; 
+ 170   1        // enable uart transmit interrupt
+ 171   1        // EST = 1;
+ 172   1      }
+ 173          /***********************************************************************
+ 174          DESC:    Transmits a 8-bit value via the UART in the current mode
+ 175                   May result in a transmit interrupt if enabled.
+ 176          RETURNS: Nothing
+ 177          CAUTION: uart_init must be called first
+C51 COMPILER V9.03   CONTROLDIGITALAMPDIFP89LPC935                                         03/02/2015 13:49:12 PAGE 4   
+
+ 178          ************************************************************************/
+ 179          void uart_transmit  (  unsigned char value   )   // data to transmit
+ 180          {
+ 181   1        SBUF = value;
+ 182   1        {int i=1500;while (--i);} // Retardo para esperar a que transmita
+ 183   1      } // uart_transmiT
+ 184          /***********************************************************************
+ 185          DESC:    Inicializa las teclas, la interrupción del teclado y la máscara
+ 186          RETURNS: Nothing
+ 187          CAUTION: EA must be set to 1 after calling this function
+ 188          ************************************************************************/
+ 189          void keypad_init  (  void  )
+ 190          {
+ 191   1        // define pattern
+ 192   1        KBPATN = 0x0E;
+ 193   1        // define P0 pins that trigger interrupt
+ 194   1        KBMASK = 0x0E;
+ 195   1        // pattern must not match
+ 196   1        KBCON = 0x00;
+ 197   1        // set P0 pins as inputs
+ 198   1        P0M1 |= 0x0E;
+ 199   1        P0M2 &= ~0x0E;
+ 200   1      // set isr priority to 3
+ 201   1        IP1 &= 0xFD;
+ 202   1        IP1H &= 0xFD;
+ 203   1        IP1 |= 0x02;
+ 204   1        IP1H |= 0x02;
+ 205   1        // Habilita la interrupción del teclado
+ 206   1        EKBI = 1;
+ 207   1      }
+ 208          /***********************************************************************
+ 209          DESC:    Inicializa los pines de los puertos para relés o leds y 
+ 210                           pone la sin_filtro en su estado por defecto
+ 211          RETURNS: Nothing
+ 212          CAUTION: Call before the initialization functions of other peripherals
+ 213          ************************************************************************/
+ 214          void ports_init  (  void  )
+ 215          {
+ 216   1      // Configuración de los pines
+ 217   1      // Los pines de la UART y el teclado no se configuran aquí
+ 218   1               P0M1 &= 0xCE;
+ 219   1               P0M2 |= 0x31;
+ 220   1               P1M1 &= 0x3F;
+ 221   1               P1M1 |= 0x3C;
+ 222   1               P1M2 &= 0xDF;
+ 223   1               P1M2 |= 0xDC;
+ 224   1               P2M1 &= 0xCF;
+ 225   1               P2M1 |= 0xCF;
+ 226   1               P2M2 &= 0xCF;
+ 227   1               P2M2 |= 0xCF;
+ 228   1               P3M1 &= 0xFC;
+ 229   1               P3M2 |= 0x03;
+ 230   1      }
+ 231          /***********************************************************************
+ 232          DESC:    Initializes the oscillator to generate a CPU clock at
+ 233                   7.3728 MHz
+ 234          
+ 235                   Uses on-chip oscillator
+ 236          RETURNS: Nothing
+ 237          ************************************************************************/
+ 238          extern void osc_init  (  void  )
+ 239          {
+C51 COMPILER V9.03   CONTROLDIGITALAMPDIFP89LPC935                                         03/02/2015 13:49:12 PAGE 5   
+
+ 240   1        // clock divider
+ 241   1        DIVM = 0x00;
+ 242   1        // no clock out on CLKOUT pin
+ 243   1        TRIM &= ~0x40;
+ 244   1        // select low power clock (CPU Clock 8MHz or less)
+ 245   1      //  AUXR1 |= 0x80;
+ 246   1      } 
+ 247          /***********************************************************************
+ 248          DESC:    Initializes timers
+ 249                   Timer 0 is not used
+ 250                   Timer 1 generates an interrupt every 17.7ms
+ 251          RETURNS: Nothing
+ 252          CAUTION: If interrupts are being used then EA must be set to 1
+ 253                   after calling this function
+ 254          ************************************************************************/
+ 255          void timers_init   (  void  )
+ 256          {
+ 257   1        // configure timer 1
+ 258   1        TMOD &= 0x0F;
+ 259   1        TMOD |= 0x10;
+ 260   1        TAMOD &= 0xEF;
+ 261   1        // timer values
+ 262   1        TH1 = 0x01;
+ 263   1        TL1 = 0x1E;
+ 264   1        // set timer 1 isr priority to 0
+ 265   1        //IP0 &= 0xF7;
+ 266   1        //IP0H &= 0xF7;
+ 267   1        // enable timer 1 interrupt
+ 268   1        ET1 = 1;
+ 269   1      } 
+ 270          /***********************************************************************
+ 271          DESC:    Keypad Interrupt Service Routine
+ 272          RETURNS: Nothing
+ 273          CAUTION: keypad_init must be called first
+ 274                   EA must be set to 1
+ 275          ************************************************************************/
+ 276          void keypad_isr  (  void  ) interrupt 7 using 1
+ 277          {
+ 278   1        // clear interrupt flag
+ 279   1              EKBI = 0; // disable keyb interrupt
+ 280   1              TR1 = 1; // start timer1
+ 281   1      }
+ 282          
+ 283          /***********************************************************************
+ 284          DESC:    Timer 1 Interrupt Service Routine
+ 285          RETURNS: Nothing
+ 286          CAUTION: timers_init must be called first
+ 287                   EA must be set to 1
+ 288                           Lee el teclado, con la variable "tecla_pulsada" 
+ 289                           configura el estado del amplificador.
+ 290          ************************************************************************/
+ 291          void timers_isr1  (  void  ) interrupt 3 using 2
+ 292          {
+ 293   1              enum e_tecla tecla_pulsada;
+ 294   1              TR1 = 0; // detiene el timer
+ 295   1              // Lee el estado de los pulsadores
+ 296   1              pulsadores = P0; // salva el valor del puerto 0
+ 297   1              pulsadores |= 0xF1; // Pone a 1 los bits 0, 4, 5, 6 y 7 de pulsadores
+ 298   1              if (pulsadores != 0xFF) // Si pulsadores es distinto de FF se han pulsado teclas
+ 299   1              { 
+ 300   2                      tecla_pulsada = detecta_tecla_pulsada(); // Mira que tecla es
+ 301   2                      if (tecla_valida ) // y si es una tecla válida...
+C51 COMPILER V9.03   CONTROLDIGITALAMPDIFP89LPC935                                         03/02/2015 13:49:12 PAGE 6   
+
+ 302   2                      {
+ 303   3                              configura_amplificador(tecla_pulsada);// Actua sobre la fuente
+ 304   3                      }
+ 305   2              }
+ 306   1              // Espera a que se suelte la tecla antes de habilitar de nuevo la interrupción del teclado
+ 307   1              while (pulsadores!=0xFF) // Lee el teclado hasta que se suelta la tecla 
+ 308   1              {
+ 309   2                      pulsadores = P0; // salva el valor del puerto 0
+ 310   2                      pulsadores |= 0xF1; // Pone a 1 los bits 5,6 y 7 del registro de los pulsadores
+ 311   2              }
+ 312   1              pwdw=1; // Flag para que vuelva a power down en el bucle infinito del main
+ 313   1              KBCON &= 0xFE; // reset keyb interrupt flag
+ 314   1              EKBI = 1; // enable keyb interrupt  
+ 315   1      } 
+ 316          /***********************************************************************
+ 317          DESC:           determina que tecla se ha pulsado. Modifica el flag
+ 318                                  tecla_valida  y devuelve el valor de la tecla detectada                 
+ 319          RETURNS: sw_entrada_no o sw_ganancia o sw_filtro o sw_error
+ 320          
+ 321          ************************************************************************/
+ 322          enum e_tecla detecta_tecla_pulsada(void)
+ 323          {
+ 324   1              enum e_tecla tecla_detectada;
+ 325   1              switch (pulsadores)
+ 326   1              {
+ 327   2                      case 0xFD: // Tecla entrada AC/CD
+ 328   2                              tecla_detectada = sw_entrada_no;
+ 329   2                              tecla_valida=1;                 
+ 330   2                      break;     
+ 331   2                      case 0xFB: // Tecla del filtro
+ 332   2                              tecla_detectada = sw_filtro;
+ 333   2                              tecla_valida=1;                 
+ 334   2                      break;
+ 335   2                      case 0xF7: // Tecla de ganancia
+ 336   2                              tecla_detectada = sw_ganancia;
+ 337   2                              tecla_valida=1;                 
+ 338   2                      break;
+ 339   2                      default: // Cualquier otro valor
+ 340   2                      tecla_detectada = sw_error;
+ 341   2                      tecla_valida=0; 
+ 342   2                      break;
+ 343   2              }
+ 344   1      return tecla_detectada;
+ 345   1      }
+ 346          
+ 347          /***********************************************************************
+ 348          DESC:   función que modifica el estado del amplificador 
+ 349                          configura los relés y los leds del amplificador en función de la
+ 350                          la tecla que recibe de entrada 
+ 351          RETURNS: nada
+ 352          ************************************************************************/
+ 353          void configura_amplificador(enum e_tecla tecla_pulsada)
+ 354          {
+ 355   1              switch (tecla_pulsada)
+ 356   1              {
+ 357   2              //.......Se ha pulsado la tecla de filtro ............... 
+ 358   2                      case sw_filtro:
+ 359   2                      // Cambia el estado del Filtro
+ 360   2                              switch(Filtro)
+ 361   2                              {
+ 362   3                                      case sin_filtro: // Cambia a segundo_orden
+ 363   3                                              configura_filtro(segundo_orden);
+C51 COMPILER V9.03   CONTROLDIGITALAMPDIFP89LPC935                                         03/02/2015 13:49:12 PAGE 7   
+
+ 364   3                                      break;
+ 365   3                                      case segundo_orden: // Cambia a cuarto orden
+ 366   3                                              configura_filtro(cuarto_orden);
+ 367   3                                      break;
+ 368   3                                      case cuarto_orden: // Cambia a sin_filtro
+ 369   3                                              configura_filtro(sin_filtro);
+ 370   3                                      break;
+ 371   3                              } // switch(Filtro)
+ 372   2                      break; // case sw_filtro
+ 373   2              //.......Si se ha pulsado la tecla de entrada AC.................... 
+ 374   2                      case sw_entrada_no:
+ 375   2                      // Cambia el estado de la Entrada
+ 376   2                              switch (Entrada)
+ 377   2                              {
+ 378   3                                      case entrada_no:
+ 379   3                                      // Cambia a  entrada_si
+ 380   3                                              configura_entrada(entrada_si);
+ 381   3                                      break;
+ 382   3                                      case entrada_si:
+ 383   3                                      // Cambia a entrada ac
+ 384   3                                              configura_entrada(entrada_no);
+ 385   3                                      break;
+ 386   3                              }//switch (Entrada)
+ 387   2                      break; // case sw_AC
+ 388   2              //.......Si se ha pulsado la tecla de ganancia.................... 
+ 389   2                      case sw_ganancia:
+ 390   2                              // Cambia el ganancia del amplificador
+ 391   2                              switch(Ganancia)
+ 392   2                              {
+ 393   3                                      case uno:// Cambia a ganancia 10
+ 394   3                                              configura_ganancia(diez);
+ 395   3                                      break;// case uno
+ 396   3                                      case diez: // Cambia a gananacia 100
+ 397   3                                              configura_ganancia(cien);
+ 398   3                                              break;// case diez
+ 399   3                                      case cien:// Cambia a ganancia 1000
+ 400   3                                              configura_ganancia(mil);
+ 401   3                                      break;// case cien
+ 402   3                                      case mil:// Cambia a ganancia 1
+ 403   3                                                      configura_ganancia(uno);
+ 404   3                                      break;// case mil
+ 405   3                              }//switch(Ganancia)
+ 406   2                      break; // case sw_ganancia
+ 407   2                      //.... Si viene de reset o encendido configura con la palabra de estado...
+ 408   2      //              case power_on: 
+ 409   2      //              //lee_estado_y_configura();
+ 410   2      //              break;
+ 411   2                      default:
+ 412   2                      break;
+ 413   2              }
+ 414   1      }
+ 415          /***********************************************************************
+ 416          DESC: Pone el filtro en el estado que se le pida con "estado_deseado"
+ 417          RETURNS: Nothing
+ 418          CAUTION: 
+ 419          ************************************************************************/
+ 420          void configura_filtro(enum e_filtro filtro_deseado)
+ 421          {
+ 422   1                      switch(filtro_deseado)
+ 423   1                      {
+ 424   2                      case segundo_orden: // Cambia a segundo_orden
+ 425   2                              Filtro = segundo_orden;
+C51 COMPILER V9.03   CONTROLDIGITALAMPDIFP89LPC935                                         03/02/2015 13:49:12 PAGE 8   
+
+ 426   2                              LED_4POLOS      = LED_OFF;
+ 427   2                              LED_2POLOS      = LED_ON;
+ 428   2                              LED_SIN_FILTRO = LED_OFF;
+ 429   2                              RELE_FILTRO = RELE_OFF;
+ 430   2                              RELE_ORDEN = RELE_ON;
+ 431   2                      break;
+ 432   2                      case cuarto_orden: // Cambia a cuarto orden
+ 433   2                              Filtro = cuarto_orden;
+ 434   2                              LED_4POLOS      = LED_ON;
+ 435   2                              LED_2POLOS      = LED_OFF;
+ 436   2                              LED_SIN_FILTRO = LED_OFF;
+ 437   2                              RELE_FILTRO = RELE_OFF;
+ 438   2                              RELE_ORDEN = RELE_OFF;
+ 439   2                      break;
+ 440   2                              //Actualiza la palabra de estado del filtro
+ 441   2                      case sin_filtro: // Cambia a sin_filtro
+ 442   2                              Filtro = sin_filtro;
+ 443   2                              LED_4POLOS      = LED_OFF;
+ 444   2                              LED_2POLOS      = LED_OFF;
+ 445   2                              LED_SIN_FILTRO = LED_ON;
+ 446   2                              RELE_FILTRO = RELE_ON;
+ 447   2                              RELE_ORDEN = RELE_OFF;
+ 448   2                      break;
+ 449   2                      default:  // Configuración por defecto (por si no lee bien la EEPROM)
+ 450   2                              Filtro = cuarto_orden;
+ 451   2                              LED_4POLOS      = LED_ON;
+ 452   2                              LED_2POLOS      = LED_OFF;
+ 453   2                              LED_SIN_FILTRO = LED_OFF;
+ 454   2                              RELE_FILTRO = RELE_OFF;
+ 455   2                              RELE_ORDEN = RELE_OFF;
+ 456   2                      break;
+ 457   2              } // switch(estado_deseado)
+ 458   1      }
+ 459          /***********************************************************************
+ 460          DESC: Pone la entrada en el estado que se le pida con "entrada_deseada"
+ 461          RETURNS: Nothing
+ 462          CAUTION: 
+ 463          ************************************************************************/
+ 464          void configura_entrada(enum e_entrada entrada_deseada)
+ 465          {
+ 466   1              switch (entrada_deseada)
+ 467   1              {
+ 468   2                      case entrada_no:
+ 469   2                              // Cambia a entrada ac
+ 470   2                              Entrada = entrada_no; // Estado actual de la Entrada
+ 471   2                              LED_AC =  LED_OFF;
+ 472   2                              RELE_AC = RELE_OFF;
+ 473   2                      break;
+ 474   2                      case entrada_si:
+ 475   2                              // Cambia a  entrada_si
+ 476   2                              Entrada = entrada_si; // Estado actual de la Entrada
+ 477   2                              LED_AC =  LED_ON;
+ 478   2                              RELE_AC = RELE_ON;
+ 479   2                      break;
+ 480   2                      default:  // Configuración por defecto 
+ 481   2                              Entrada = entrada_no; // Estado actual de la Entrada
+ 482   2                              LED_AC =  LED_OFF;
+ 483   2                              RELE_AC = RELE_OFF;
+ 484   2                      break;
+ 485   2              }//switch (entrada_deseada)
+ 486   1      }
+ 487          /***********************************************************************
+C51 COMPILER V9.03   CONTROLDIGITALAMPDIFP89LPC935                                         03/02/2015 13:49:12 PAGE 9   
+
+ 488          DESC: Pone la ganancia en el estado que se le pida con "ganancia_deseada"
+ 489          ENTRADA: Entra con una variable de estado de la gananacia. Si no es 
+ 490                                  correcta configura por defecto en default
+ 491          RETURNS: Nothing
+ 492          CAUTION: 
+ 493          ************************************************************************/
+ 494          void configura_ganancia(enum e_ganancia ganancia_deseada)
+ 495          {
+ 496   1              switch(ganancia_deseada)
+ 497   1              {
+ 498   2                      case uno:// Cambia a ganancia 1
+ 499   2                              Ganancia = uno;                                 
+ 500   2                              LED_G_1                 = LED_ON;
+ 501   2                              LED_G_10                = LED_OFF;
+ 502   2                              LED_G_100               = LED_OFF;
+ 503   2                              LED_G_1000              = LED_OFF;                                      
+ 504   2                              BIT_A0                  = BIT_OFF;
+ 505   2                              BIT_A1                  = BIT_OFF;
+ 506   2                      break;// case uno
+ 507   2                      case diez:// Cambia a ganancia 10
+ 508   2                              Ganancia=diez;
+ 509   2                              LED_G_1                 = LED_OFF;
+ 510   2                              LED_G_10                = LED_ON;
+ 511   2                              LED_G_100               = LED_OFF;
+ 512   2                              LED_G_1000              = LED_OFF;                                      
+ 513   2                              BIT_A0                  = BIT_ON;
+ 514   2                              BIT_A1                  = BIT_OFF;
+ 515   2                      break;// case diez
+ 516   2                      case cien: // Cambia a gananacia 100
+ 517   2                              Ganancia=cien;                                  
+ 518   2                              LED_G_1                 = LED_OFF;
+ 519   2                              LED_G_10                = LED_OFF;
+ 520   2                              LED_G_100               = LED_ON;
+ 521   2                              LED_G_1000              = LED_OFF;                                      
+ 522   2                              BIT_A0                  = BIT_OFF;
+ 523   2                              BIT_A1                  = BIT_ON;
+ 524   2                      break;// case cien
+ 525   2                      case mil:// Cambia a ganancia 1000
+ 526   2                              Ganancia = mil;
+ 527   2                              LED_G_1                 = LED_OFF;
+ 528   2                              LED_G_10                = LED_OFF;
+ 529   2                              LED_G_100               = LED_OFF;
+ 530   2                              LED_G_1000              = LED_ON;                                       
+ 531   2                              BIT_A0                  = BIT_ON;
+ 532   2                              BIT_A1                  = BIT_ON;
+ 533   2                      break;// case mil
+ 534   2                      default:  // Configuración por defecto (por si no lee bien la EEPROM)
+ 535   2                              Ganancia=diez;
+ 536   2                              LED_G_1                 = LED_OFF;
+ 537   2                              LED_G_10                = LED_ON;
+ 538   2                              LED_G_100               = LED_OFF;
+ 539   2                              LED_G_1000              = LED_OFF;                                      
+ 540   2                              BIT_A0                  = BIT_ON;
+ 541   2                              BIT_A1                  = BIT_OFF;
+ 542   2                      break;
+ 543   2              }//switch(ganancia_deseada)
+ 544   1              // Guarda el estdo de la ganancia en la EEPROM
+ 545   1       }
+ 546          /***********************************************************************
+ 547          DESC:    Lee el estado guardado en la EEPROM y configura
+ 548                          el amplificador.
+ 549                          Utiliza las funciones de eeprom.c
+C51 COMPILER V9.03   CONTROLDIGITALAMPDIFP89LPC935                                         03/02/2015 13:49:12 PAGE 10  
+
+ 550          RETURNS: 
+ 551          CAUTION: 
+ 552          ************************************************************************/
+ 553          void configura_estado(void)
+ 554          {
+ 555   1              configura_entrada(entrada_no);//Configura el estado de la entrad del amplificador
+ 556   1              configura_filtro(segundo_orden);//Configura el estado del filtro del amplificador
+ 557   1              configura_ganancia(diez);//Configura el estado de la ganancia del amplificador
+ 558   1      }
+ 559          
+ 560          /*************************** FIN ****************************************/
+ 561          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    636    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      8       3
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      3    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
